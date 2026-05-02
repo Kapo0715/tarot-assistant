@@ -1,5 +1,5 @@
 const CONFIG = {
-  VERSION: '1.1',
+  VERSION: '1.2',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
   BASE_URL_UME: 'https://example.com/ume',   // 梅プラン ¥3,000 のBASE URLに変更
   BASE_URL_MATSU: 'https://example.com/matsu', // 松プランのBASE URLに変更
