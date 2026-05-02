@@ -833,8 +833,7 @@ ${meaning}
 【余白】希望を示しつつ、道筋だけを残して締める
 ・相談者には可能性・素地があることを肯定的に伝える
 ・ただし「そこに至る具体的な道筋は今回の鑑定では見えない」と正直に添える
-・感情的な言葉は使わず、前向きかつ静かなトーンで締める
-・1〜2文で完結させる`;
+・感情的な言葉は使わず、前向きかつ静かなトーンで締める`;
 
   const btn = document.getElementById('generate-btn');
   btn.disabled = true;
@@ -842,7 +841,7 @@ ${meaning}
   btn.textContent = '生成中...';
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
