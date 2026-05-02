@@ -804,9 +804,11 @@ async function generateAI() {
   const posLabel = position === 'upright' ? '正位置' : '逆位置';
   const meaning = card[position].meaning;
 
-  const systemInstruction = `あなたは「黒烏タロット」という転職専門のタロット占い師です。口調は丁寧だが率直、辛口リアル系。一文は短く（体言止め可）、絵文字は使わない。返信文は必ず200字以上300字以下で書くこと。短すぎる回答は禁止。`;
+  const userMessage = `あなたは「黒烏タロット」という転職専門のタロット占い師です。
+口調: 丁寧だが率直、辛口リアル系。一文は短く（体言止め可）、絵文字は使わない。
+【重要】返信文は必ず200字以上300字以下で書くこと。100字以下の回答は禁止。文章を途中で終わらせないこと。
 
-  const userMessage = `以下の情報をもとに、LINEへの返信文（本文のみ）を書いてください。締めの言葉は不要です。必ず200字以上300字以下で書くこと。
+以下の情報をもとに、LINEへの返信文（本文のみ）を書いてください。締めの言葉は不要です。
 
 【相談者の質問】
 ${question || '（質問未入力）'}
@@ -815,7 +817,9 @@ ${question || '（質問未入力）'}
 ${card.name}（${posLabel}）
 
 【カードの基本解釈（転職文脈）】
-${meaning}`;
+${meaning}
+
+必ず200字以上300字以下で、文章を最後まで書ききること。`;
 
   const btn = document.getElementById('generate-btn');
   btn.disabled = true;
@@ -828,7 +832,6 @@ ${meaning}`;
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
         contents: [{ parts: [{ text: userMessage }] }],
         generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
       })
