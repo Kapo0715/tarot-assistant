@@ -399,6 +399,14 @@
     }
     .api-status.ok { color: #4ade80; }
     .api-status.err { color: var(--danger); }
+
+    .version-tag {
+      font-size: 0.62rem;
+      color: var(--muted);
+      margin-left: 6px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -410,6 +418,7 @@
     <p>無料鑑定（1枚引き）返信文ジェネレーター</p>
   </div>
   <button class="settings-btn" id="settings-btn" onclick="openSettings()" title="API設定">⚙</button>
+  <span class="version-tag" id="version-tag"></span>
 </header>
 
 <section>
@@ -941,6 +950,7 @@ function clearApiKey() {
 // ── Boot ──
 renderCards();
 if (getApiKey()) document.getElementById('settings-btn').classList.add('has-key');
+document.getElementById('version-tag').textContent = `v${CONFIG.VERSION}`;
 </script>
 </body>
 </html>
