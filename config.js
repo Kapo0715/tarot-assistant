@@ -1,8 +1,8 @@
 const CONFIG = {
-  VERSION: '2.2',
+  VERSION: '2.3',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
-  BASE_URL_UME: 'https://example.com/ume',   // 梅プラン ¥3,000 のBASE URLに変更
-  BASE_URL_MATSU: 'https://example.com/matsu', // 松プランのBASE URLに変更
+  BASE_URL_UME: 'https://naillamer.theshop.jp/items/143583349',
+  BASE_URL_MATSU: 'https://naillamer.theshop.jp/items/143583486',
 
   UPSELL: {
     '前進・出発系': {
