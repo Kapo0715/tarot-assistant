@@ -407,6 +407,64 @@
       flex-shrink: 0;
       white-space: nowrap;
     }
+
+    /* ── Plan Selector ── */
+    .plan-toggle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .plan-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 0.72rem;
+      padding: 10px 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.4;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .plan-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .plan-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .plan-btn .plan-name { display: block; font-weight: 500; }
+    .plan-btn .plan-price { display: block; font-size: 0.6rem; margin-top: 2px; opacity: 0.8; }
+    .plan-btn .plan-soon { display: block; font-size: 0.58rem; margin-top: 2px; opacity: 0.5; }
+
+    /* ── Card Slot (梅プラン) ── */
+    .card-slot { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+    .card-slot-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; cursor: pointer; transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .card-slot-header:hover { background: rgba(124,58,237,0.08); }
+    .card-slot-label { font-size: 0.8rem; color: var(--accent-l); font-weight: 500; }
+    .card-slot-value { font-size: 0.78rem; color: var(--muted); }
+    .card-slot-value.chosen { color: var(--text); }
+    .card-slot-body { padding: 0 12px 14px; border-top: 1px solid var(--border); }
+    .slot-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+
+    /* ── 鑑定書プレビュー ── */
+    .kantei-wrap { background: #080812; border: 1px solid #3d2d6e; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+    .kantei-header { text-align: center; padding: 20px 16px 16px; border-bottom: 1px solid #2a1f50; }
+    .kantei-brand { font-family: 'Noto Serif JP', serif; font-size: 1.05rem; color: var(--accent-l); letter-spacing: 0.12em; }
+    .kantei-tagline { font-size: 0.65rem; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
+    .kantei-body { padding: 18px 16px; }
+    .kantei-block { margin-bottom: 18px; }
+    .kantei-block-label {
+      font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 8px;
+      padding-bottom: 5px; border-bottom: 1px solid #1c1c2e;
+    }
+    .kantei-q-text { font-size: 0.88rem; line-height: 1.7; color: var(--text); }
+    .kantei-cards-row { display: flex; gap: 8px; }
+    .kantei-card-chip { flex: 1; background: var(--surface); border: 1px solid #3d2d6e; border-radius: 8px; padding: 10px 6px; text-align: center; }
+    .kantei-card-chip-name { font-family: 'Noto Serif JP', serif; font-size: 0.82rem; color: var(--accent-l); display: block; }
+    .kantei-card-chip-pos { font-size: 0.62rem; color: var(--muted); display: block; margin-top: 3px; }
+    .kantei-reading { font-size: 0.88rem; line-height: 1.9; white-space: pre-wrap; word-break: break-all; color: var(--text); }
+    .kantei-footer { text-align: center; padding: 14px 16px 18px; border-top: 1px solid #2a1f50; }
+    .kantei-closing { font-family: 'Noto Serif JP', serif; font-size: 0.88rem; color: var(--accent-l); margin-bottom: 6px; }
+    .kantei-sig { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; }
   </style>
 </head>
 <body>
@@ -420,6 +478,32 @@
   <button class="settings-btn" id="settings-btn" onclick="openSettings()" title="API設定">⚙</button>
   <span class="version-tag" id="version-tag"></span>
 </header>
+
+<section id="plan-section">
+  <div class="label">プラン</div>
+  <div class="plan-toggle">
+    <button class="plan-btn selected" onclick="setPlan(this,'free')">
+      <span class="plan-name">無料</span>
+      <span class="plan-price">1枚引き</span>
+    </button>
+    <button class="plan-btn" onclick="setPlan(this,'ume')">
+      <span class="plan-name">迷い</span>
+      <span class="plan-price">¥3,000</span>
+    </button>
+    <button class="plan-btn" disabled>
+      <span class="plan-name">決断</span>
+      <span class="plan-price">¥6,000</span>
+      <span class="plan-soon">準備中</span>
+    </button>
+    <button class="plan-btn" disabled>
+      <span class="plan-name">本気</span>
+      <span class="plan-price">¥15,000</span>
+      <span class="plan-soon">準備中</span>
+    </button>
+  </div>
+</section>
+
+<div id="flow-free">
 
 <section>
   <div class="label">① 相談者の質問</div>
@@ -463,6 +547,99 @@
   <button class="reset-btn" style="width:100%;margin-top:8px" onclick="resetOutput()">作り直す</button>
   <div class="copy-msg hidden" id="copy-msg">コピーしました</div>
 </div>
+
+</div><!-- /flow-free -->
+
+<div id="flow-ume" style="display:none">
+
+  <section>
+    <div class="label">① 相談者の質問</div>
+    <textarea id="ume-question" placeholder="受け取った質問をここに貼り付けてください"></textarea>
+  </section>
+
+  <section>
+    <div class="label">② カードを選択（3枚）</div>
+
+    <div class="card-slot">
+      <div class="card-slot-header" onclick="toggleSlot(1)">
+        <span class="card-slot-label">カード 1</span>
+        <span class="card-slot-value" id="ume-sv1">タップして選択 ▾</span>
+      </div>
+      <div class="card-slot-body" id="ume-sb1" style="display:none">
+        <div class="card-grid" id="ume-g1" style="margin-top:12px"></div>
+        <div class="slot-pos">
+          <button class="pos-btn selected" id="ume-p1u" onclick="setUmePos(1,'upright')">正位置</button>
+          <button class="pos-btn" id="ume-p1r" onclick="setUmePos(1,'reversed')">逆位置</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-slot">
+      <div class="card-slot-header" onclick="toggleSlot(2)">
+        <span class="card-slot-label">カード 2</span>
+        <span class="card-slot-value" id="ume-sv2">タップして選択 ▾</span>
+      </div>
+      <div class="card-slot-body" id="ume-sb2" style="display:none">
+        <div class="card-grid" id="ume-g2" style="margin-top:12px"></div>
+        <div class="slot-pos">
+          <button class="pos-btn selected" id="ume-p2u" onclick="setUmePos(2,'upright')">正位置</button>
+          <button class="pos-btn" id="ume-p2r" onclick="setUmePos(2,'reversed')">逆位置</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-slot">
+      <div class="card-slot-header" onclick="toggleSlot(3)">
+        <span class="card-slot-label">カード 3</span>
+        <span class="card-slot-value" id="ume-sv3">タップして選択 ▾</span>
+      </div>
+      <div class="card-slot-body" id="ume-sb3" style="display:none">
+        <div class="card-grid" id="ume-g3" style="margin-top:12px"></div>
+        <div class="slot-pos">
+          <button class="pos-btn selected" id="ume-p3u" onclick="setUmePos(3,'upright')">正位置</button>
+          <button class="pos-btn" id="ume-p3r" onclick="setUmePos(3,'reversed')">逆位置</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <button class="generate-btn" id="ume-gen-btn" onclick="generateUme()" disabled>鑑定書を作る</button>
+  </section>
+
+  <div class="output-area" id="ume-output-area">
+    <div class="kantei-wrap" id="kantei-preview">
+      <div class="kantei-header">
+        <div class="kantei-brand">黒烏タロット</div>
+        <div class="kantei-tagline">転職の本音、教えます</div>
+      </div>
+      <div class="kantei-body">
+        <div class="kantei-block">
+          <div class="kantei-block-label">ご相談</div>
+          <div class="kantei-q-text" id="kantei-q"></div>
+        </div>
+        <div class="kantei-block">
+          <div class="kantei-block-label">カード</div>
+          <div class="kantei-cards-row" id="kantei-cards"></div>
+        </div>
+        <div class="kantei-block">
+          <div class="kantei-block-label">鑑定</div>
+          <div class="kantei-reading" id="kantei-reading"></div>
+        </div>
+      </div>
+      <div class="kantei-footer">
+        <div class="kantei-closing">甘い言葉より、本当の答えを。🖤</div>
+        <div class="kantei-sig">黒烏タロット ｜ @kurogarasu_tarot</div>
+      </div>
+    </div>
+    <div class="output-actions">
+      <button class="copy-btn" onclick="copyKantei()">テキストコピー</button>
+      <button class="reset-btn" onclick="resetUme()">作り直す</button>
+    </div>
+    <div class="copy-msg hidden" id="ume-copy-msg"></div>
+  </div>
+
+</div><!-- /flow-ume -->
 
 <!-- Settings Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="onOverlayClick(event)">
@@ -971,8 +1148,192 @@ function clearApiKey() {
   st.className = 'api-status err';
 }
 
+// ── Plan ──
+let currentPlan = 'free';
+let umeCards    = [null, null, null];
+let umePositions = ['upright', 'upright', 'upright'];
+
+function setPlan(el, plan) {
+  currentPlan = plan;
+  document.querySelectorAll('.plan-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('flow-free').style.display = plan === 'free' ? 'block' : 'none';
+  document.getElementById('flow-ume').style.display  = plan === 'ume'  ? 'block' : 'none';
+}
+
+// ── Ume: Card Slots ──
+function toggleSlot(slot) {
+  const body = document.getElementById(`ume-sb${slot}`);
+  const isOpen = body.style.display !== 'none';
+  [1, 2, 3].forEach(s => { document.getElementById(`ume-sb${s}`).style.display = 'none'; });
+  if (!isOpen) body.style.display = 'block';
+}
+
+function selectUmeCard(slot, id) {
+  if (umeCards[slot-1] !== null) {
+    const prev = document.getElementById(`ume-g${slot}-${umeCards[slot-1]}`);
+    if (prev) prev.classList.remove('selected');
+  }
+  umeCards[slot-1] = id;
+  document.getElementById(`ume-g${slot}-${id}`).classList.add('selected');
+
+  const posLabel = umePositions[slot-1] === 'upright' ? '正' : '逆';
+  const sv = document.getElementById(`ume-sv${slot}`);
+  sv.textContent = `${CARDS[id].name}（${posLabel}）▾`;
+  sv.classList.add('chosen');
+
+  document.getElementById(`ume-sb${slot}`).style.display = 'none';
+  if (slot < 3) document.getElementById(`ume-sb${slot+1}`).style.display = 'block';
+
+  updateUmeBtn();
+}
+
+function setUmePos(slot, pos) {
+  umePositions[slot-1] = pos;
+  document.getElementById(`ume-p${slot}u`).classList.toggle('selected', pos === 'upright');
+  document.getElementById(`ume-p${slot}r`).classList.toggle('selected', pos === 'reversed');
+  if (umeCards[slot-1] !== null) {
+    const posLabel = pos === 'upright' ? '正' : '逆';
+    document.getElementById(`ume-sv${slot}`).textContent = `${CARDS[umeCards[slot-1]].name}（${posLabel}）▾`;
+  }
+}
+
+function updateUmeBtn() {
+  document.getElementById('ume-gen-btn').disabled = umeCards.some(c => c === null);
+}
+
+function renderUmeGrids() {
+  [1, 2, 3].forEach(slot => {
+    const grid = document.getElementById(`ume-g${slot}`);
+    if (!grid) return;
+    grid.innerHTML = CARDS.map(card => `
+      <div class="card-item" id="ume-g${slot}-${card.id}" onclick="selectUmeCard(${slot}, ${card.id})">
+        <span class="card-num">${card.id}</span>
+        <span class="card-name">${card.name}</span>
+      </div>
+    `).join('');
+  });
+}
+
+// ── Ume: Generate ──
+async function generateUme() {
+  const apiKey = getApiKey();
+  if (!apiKey) { openSettings(); return; }
+
+  const question = document.getElementById('ume-question').value.trim();
+  const cardData = umeCards.map((id, i) => {
+    const pos = umePositions[i];
+    return { card: CARDS[id], pos, posLabel: pos === 'upright' ? '正位置' : '逆位置', meaning: CARDS[id][pos].meaning };
+  });
+
+  const prompt = `あなたは「黒烏タロット」という転職専門の占い師です。
+口調: 丁寧だが率直、辛口リアル系。一文は短く（体言止め可）、絵文字は使わない。
+
+以下の3枚のカードをもとに、有料鑑定（迷いプラン）の鑑定文を800字程度で書いてください。
+締めの言葉は不要です。各ブロックの間には空行を1行入れること。
+
+【相談者の質問】
+${question || '（未入力）'}
+
+【カード1】${cardData[0].card.name}（${cardData[0].posLabel}）
+【カード2】${cardData[1].card.name}（${cardData[1].posLabel}）
+【カード3】${cardData[2].card.name}（${cardData[2].posLabel}）
+
+【各カードの転職文脈での解釈】
+カード1 - ${cardData[0].meaning}
+カード2 - ${cardData[1].meaning}
+カード3 - ${cardData[2].meaning}
+
+【必須構成】3枚のカードを統合して1本の鑑定文として書くこと：
+
+【現状】3枚の流れから今の状態を具体的に描写する
+・読んだ人が「私のことを見ている」と感じるくらい具体的に
+
+【核心】相談に対する答えを断言する
+・「〜かもしれない」は使わず断言する
+・今すべきことを1つに絞って伝える
+
+【展望】この先どうなるかを正直に伝える
+・希望と現実を両方示す
+・前向きかつ静かなトーンで締める`;
+
+  const btn = document.getElementById('ume-gen-btn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = '生成中...';
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+        ]
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const body = parts.map(p => p.text || '').join('').trim();
+    showKantei(question, cardData, body);
+  } catch (e) {
+    alert(`エラーが発生しました:\n${e.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = '鑑定書を作る';
+    updateUmeBtn();
+  }
+}
+
+function showKantei(question, cardData, readingText) {
+  document.getElementById('kantei-q').textContent = question || '（未入力）';
+  document.getElementById('kantei-cards').innerHTML = cardData.map((c, i) => `
+    <div class="kantei-card-chip">
+      <span class="kantei-card-chip-name">${c.card.name}</span>
+      <span class="kantei-card-chip-pos">${c.posLabel}</span>
+    </div>
+  `).join('');
+  document.getElementById('kantei-reading').textContent = readingText;
+  const area = document.getElementById('ume-output-area');
+  area.classList.add('visible');
+  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyKantei() {
+  const q = document.getElementById('kantei-q').textContent;
+  const chips = document.querySelectorAll('.kantei-card-chip');
+  const cards = Array.from(chips).map((el, i) =>
+    `カード${i+1}: ${el.querySelector('.kantei-card-chip-name').textContent}（${el.querySelector('.kantei-card-chip-pos').textContent}）`
+  ).join('\n');
+  const reading = document.getElementById('kantei-reading').textContent;
+  const text = `■ご相談\n${q}\n\n■カード\n${cards}\n\n■鑑定\n${reading}\n\n甘い言葉より、本当の答えを。🖤\n黒烏タロット | @kurogarasu_tarot`;
+  navigator.clipboard.writeText(text).then(() => {
+    const msg = document.getElementById('ume-copy-msg');
+    msg.textContent = 'コピーしました';
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 2000);
+  });
+}
+
+function resetUme() {
+  document.getElementById('ume-output-area').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // ── Boot ──
 renderCards();
+renderUmeGrids();
 if (getApiKey()) document.getElementById('settings-btn').classList.add('has-key');
 document.getElementById('version-tag').textContent = `v${CONFIG.VERSION}`;
 </script>
