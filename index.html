@@ -465,6 +465,50 @@
     .kantei-footer { text-align: center; padding: 14px 16px 18px; border-top: 1px solid #2a1f50; }
     .kantei-closing { font-family: 'Noto Serif JP', serif; font-size: 0.88rem; color: var(--accent-l); margin-bottom: 6px; }
     .kantei-sig { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; }
+
+    /* ── Random Button ── */
+    .random-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 0.85rem;
+      padding: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: border-color 0.15s, color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .random-btn:hover { border-color: var(--accent-l); color: var(--accent-l); }
+
+    /* ── Card Image in 鑑定書 ── */
+    .kantei-card-img {
+      width: 100%;
+      aspect-ratio: 5/7;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+      background: var(--surface2);
+      margin-bottom: 6px;
+    }
+    .kantei-card-img.reversed { transform: rotate(180deg); }
+    .kantei-card-img-placeholder {
+      display: none;
+      width: 100%;
+      aspect-ratio: 5/7;
+      background: var(--surface2);
+      border-radius: 4px;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: var(--border);
+      margin-bottom: 6px;
+    }
+    .img-missing .kantei-card-img { display: none; }
+    .img-missing .kantei-card-img-placeholder { display: flex; }
+    .kantei-card-chip-orient { font-size: 0.62rem; color: var(--muted); display: block; margin-top: 3px; }
   </style>
 </head>
 <body>
@@ -508,6 +552,7 @@
 <section>
   <div class="label">① 相談者の質問</div>
   <textarea id="question" placeholder="受け取った質問をここに貼り付けてください"></textarea>
+  <button class="random-btn" onclick="randomFree()">🎴 ランダムで1枚引く</button>
 </section>
 
 <section>
@@ -555,6 +600,7 @@
   <section>
     <div class="label">① 相談者の質問</div>
     <textarea id="ume-question" placeholder="受け取った質問をここに貼り付けてください"></textarea>
+    <button class="random-btn" onclick="randomUme()">🎴 ランダムで3枚引く</button>
   </section>
 
   <section>
@@ -1148,6 +1194,53 @@ function clearApiKey() {
   st.className = 'api-status err';
 }
 
+// ── Card Image Paths ──
+const CARD_IMGS = [
+  'card-00-fool', 'card-01-magician', 'card-02-high-priestess',
+  'card-03-empress', 'card-04-emperor', 'card-05-hierophant',
+  'card-06-lovers', 'card-07-chariot', 'card-08-strength',
+  'card-09-hermit', 'card-10-wheel', 'card-11-justice',
+  'card-12-hanged-man', 'card-13-death', 'card-14-temperance',
+  'card-15-devil', 'card-16-tower', 'card-17-star',
+  'card-18-moon', 'card-19-sun', 'card-20-judgement', 'card-21-world'
+];
+
+// ── Random ──
+function randomFree() {
+  const id = Math.floor(Math.random() * 22);
+  const pos = Math.random() < 0.5 ? 'upright' : 'reversed';
+  selectCard(id);
+  setPosition(pos);
+}
+
+function randomUme() {
+  const ids = [];
+  while (ids.length < 3) {
+    const id = Math.floor(Math.random() * 22);
+    if (!ids.includes(id)) ids.push(id);
+  }
+  [1, 2, 3].forEach(s => { document.getElementById(`ume-sb${s}`).style.display = 'none'; });
+  ids.forEach((id, i) => {
+    const slot = i + 1;
+    const pos = Math.random() < 0.5 ? 'upright' : 'reversed';
+    if (umeCards[i] !== null) {
+      const prev = document.getElementById(`ume-g${slot}-${umeCards[i]}`);
+      if (prev) prev.classList.remove('selected');
+    }
+    umeCards[i] = id;
+    umePositions[i] = pos;
+    const cardEl = document.getElementById(`ume-g${slot}-${id}`);
+    if (cardEl) cardEl.classList.add('selected');
+    document.getElementById(`ume-p${slot}u`).classList.toggle('selected', pos === 'upright');
+    document.getElementById(`ume-p${slot}r`).classList.toggle('selected', pos === 'reversed');
+    const posLabel = pos === 'upright' ? '正' : '逆';
+    const sv = document.getElementById(`ume-sv${slot}`);
+    sv.textContent = `${CARDS[id].name}（${posLabel}）▾`;
+    sv.classList.add('chosen');
+  });
+  updateUmeBtn();
+}
+
 // ── Plan ──
 let currentPlan = 'free';
 let umeCards    = [null, null, null];
@@ -1299,13 +1392,24 @@ ${question || '（未入力）'}
 function showKantei(question, cardData, readingText) {
   document.getElementById('kantei-q').textContent = question || '（未入力）';
   const spreadLabels = ['現在', '障壁', 'その先'];
-  document.getElementById('kantei-cards').innerHTML = cardData.map((c, i) => `
-    <div class="kantei-card-chip">
-      <span class="kantei-card-chip-pos">${spreadLabels[i]}</span>
-      <span class="kantei-card-chip-name">${c.card.name}</span>
-      <span class="kantei-card-chip-pos">${c.posLabel}</span>
-    </div>
-  `).join('');
+  document.getElementById('kantei-cards').innerHTML = cardData.map((c, i) => {
+    const imgFile = CARD_IMGS[c.card.id];
+    const isRev = c.pos === 'reversed';
+    return `
+      <div class="kantei-card-chip">
+        <span class="kantei-card-chip-pos">${spreadLabels[i]}</span>
+        <div class="kantei-card-img-wrap">
+          <img class="kantei-card-img${isRev ? ' reversed' : ''}"
+               src="assets/cards/${imgFile}.png"
+               alt="${c.card.name}"
+               onerror="this.parentElement.classList.add('img-missing')">
+          <div class="kantei-card-img-placeholder">🃏</div>
+        </div>
+        <span class="kantei-card-chip-name">${c.card.name}</span>
+        <span class="kantei-card-chip-orient">${c.posLabel}</span>
+      </div>
+    `;
+  }).join('');
   document.getElementById('kantei-reading').textContent = readingText;
   const area = document.getElementById('ume-output-area');
   area.classList.add('visible');
@@ -1316,7 +1420,7 @@ function copyKantei() {
   const q = document.getElementById('kantei-q').textContent;
   const chips = document.querySelectorAll('.kantei-card-chip');
   const cards = Array.from(chips).map((el, i) =>
-    `カード${i+1}: ${el.querySelector('.kantei-card-chip-name').textContent}（${el.querySelector('.kantei-card-chip-pos').textContent}）`
+    `カード${i+1}（${el.querySelector('.kantei-card-chip-pos').textContent}）: ${el.querySelector('.kantei-card-chip-name').textContent}（${el.querySelector('.kantei-card-chip-orient').textContent}）`
   ).join('\n');
   const reading = document.getElementById('kantei-reading').textContent;
   const text = `■ご相談\n${q}\n\n■カード\n${cards}\n\n■鑑定\n${reading}\n\n甘い言葉より、本当の答えを。🖤\n黒烏タロット | @kurogarasu_tarot`;
