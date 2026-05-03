@@ -19,6 +19,9 @@
       --accent-l: #a78bfa;
       --border: #2e2e2e;
       --danger: #ef4444;
+      --gold: #c9a84c;
+      --gold-l: #e8d5a0;
+      --gold-dim: rgba(201,168,76,0.12);
     }
 
     body {
@@ -444,27 +447,152 @@
     .card-slot-body { padding: 0 12px 14px; border-top: 1px solid var(--border); }
     .slot-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 
-    /* ── 鑑定書プレビュー ── */
-    .kantei-wrap { background: #080812; border: 1px solid #3d2d6e; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
-    .kantei-header { text-align: center; padding: 20px 16px 16px; border-bottom: 1px solid #2a1f50; }
-    .kantei-brand { font-family: 'Noto Serif JP', serif; font-size: 1.05rem; color: var(--accent-l); letter-spacing: 0.12em; }
-    .kantei-tagline { font-size: 0.65rem; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
-    .kantei-body { padding: 18px 16px; }
-    .kantei-block { margin-bottom: 18px; }
-    .kantei-block-label {
-      font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em;
-      text-transform: uppercase; margin-bottom: 8px;
-      padding-bottom: 5px; border-bottom: 1px solid #1c1c2e;
+    /* ── 鑑定書プレビュー（Premium） ── */
+    .kantei-wrap {
+      background: #050510;
+      border: 1px solid var(--gold);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
     }
-    .kantei-q-text { font-size: 0.88rem; line-height: 1.7; color: var(--text); }
-    .kantei-cards-row { display: flex; gap: 8px; }
-    .kantei-card-chip { flex: 1; background: var(--surface); border: 1px solid #3d2d6e; border-radius: 8px; padding: 10px 6px; text-align: center; }
-    .kantei-card-chip-name { font-family: 'Noto Serif JP', serif; font-size: 0.82rem; color: var(--accent-l); display: block; }
-    .kantei-card-chip-pos { font-size: 0.62rem; color: var(--muted); display: block; margin-top: 3px; }
-    .kantei-reading { font-size: 0.88rem; line-height: 1.9; white-space: pre-wrap; word-break: break-all; color: var(--text); }
-    .kantei-footer { text-align: center; padding: 14px 16px 18px; border-top: 1px solid #2a1f50; }
-    .kantei-closing { font-family: 'Noto Serif JP', serif; font-size: 0.88rem; color: var(--accent-l); margin-bottom: 6px; }
-    .kantei-sig { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; }
+    .kantei-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid rgba(201,168,76,0.16);
+      border-radius: 1px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .kantei-ornament {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .kantei-ornament-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      opacity: 0.45;
+    }
+    .kantei-ornament-diamond {
+      width: 5px; height: 5px; background: var(--gold);
+      transform: rotate(45deg); flex-shrink: 0; opacity: 0.75;
+    }
+    .kantei-header {
+      text-align: center; padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(201,168,76,0.18);
+      position: relative; z-index: 1;
+    }
+    .kantei-brand {
+      font-family: 'Noto Serif JP', serif; font-size: 1.12rem;
+      color: var(--gold); letter-spacing: 0.22em; margin-bottom: 4px;
+    }
+    .kantei-tagline {
+      font-size: 0.6rem; color: rgba(201,168,76,0.48);
+      letter-spacing: 0.14em; margin-top: 2px;
+    }
+    .kantei-doc-num {
+      font-size: 0.54rem; color: rgba(201,168,76,0.3);
+      margin-top: 8px; letter-spacing: 0.08em;
+    }
+    .kantei-body { padding: 22px 18px; position: relative; z-index: 1; }
+    .kantei-block { margin-bottom: 22px; }
+    .kantei-block-label {
+      font-size: 0.56rem; color: var(--gold); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px; opacity: 0.72;
+    }
+    .kantei-block-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, rgba(201,168,76,0.22), transparent);
+    }
+    .kantei-q-text {
+      font-size: 0.84rem; line-height: 1.85; color: #b8b8b8;
+      padding-left: 12px; border-left: 2px solid rgba(201,168,76,0.32);
+    }
+    .kantei-cards-row { display: flex; gap: 10px; }
+    .kantei-card-chip {
+      flex: 1; background: rgba(201,168,76,0.03);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 3px; padding: 10px 5px; text-align: center;
+    }
+    .kantei-card-chip-pos {
+      font-size: 0.52rem; color: rgba(201,168,76,0.5);
+      display: block; letter-spacing: 0.1em; margin-bottom: 5px;
+    }
+    .kantei-card-chip-name {
+      font-family: 'Noto Serif JP', serif; font-size: 0.8rem;
+      color: var(--gold-l); display: block; margin-top: 5px;
+    }
+    .kantei-card-chip-orient {
+      font-size: 0.52rem; color: rgba(201,168,76,0.42);
+      display: block; margin-top: 3px;
+    }
+    .kantei-reading {
+      font-size: 0.87rem; line-height: 2.05; white-space: pre-wrap;
+      word-break: break-all; color: #d5d5d5;
+      padding: 16px; background: rgba(124,58,237,0.06);
+      border-radius: 2px; border: 1px solid rgba(124,58,237,0.16);
+    }
+    .kantei-footer {
+      text-align: center; padding: 16px 20px 22px;
+      border-top: 1px solid rgba(201,168,76,0.18);
+      position: relative; z-index: 1;
+    }
+    .kantei-closing {
+      font-family: 'Noto Serif JP', serif; font-size: 0.87rem;
+      color: var(--gold); margin-bottom: 8px; letter-spacing: 0.06em;
+    }
+    .kantei-sig { font-size: 0.58rem; color: rgba(201,168,76,0.36); letter-spacing: 0.1em; }
+    /* Plan upgrade section */
+    .kantei-upgrade {
+      margin-bottom: 16px; padding: 16px;
+      background: rgba(201,168,76,0.02);
+      border: 1px solid rgba(201,168,76,0.14);
+      border-radius: 3px;
+    }
+    .kantei-upgrade-heading {
+      font-size: 0.65rem; color: rgba(201,168,76,0.55);
+      letter-spacing: 0.1em; text-align: center; margin-bottom: 14px;
+    }
+    .kantei-upgrade-row { display: flex; gap: 10px; }
+    .kantei-upgrade-card {
+      flex: 1; background: var(--surface);
+      border: 1px solid rgba(201,168,76,0.16);
+      border-radius: 4px; padding: 14px 10px; text-align: center;
+    }
+    .kantei-upgrade-card--featured {
+      border-color: rgba(201,168,76,0.38);
+      background: rgba(201,168,76,0.04);
+    }
+    .upgrade-plan-label {
+      font-size: 0.48rem; color: rgba(201,168,76,0.4);
+      letter-spacing: 0.18em; margin-bottom: 3px;
+    }
+    .upgrade-plan-name {
+      font-family: 'Noto Serif JP', serif; font-size: 0.88rem;
+      color: var(--gold); margin-bottom: 3px;
+    }
+    .upgrade-plan-price {
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--gold-l); margin-bottom: 8px;
+    }
+    .upgrade-plan-desc {
+      font-size: 0.66rem; color: var(--muted);
+      line-height: 1.65; margin-bottom: 12px;
+    }
+    .upgrade-plan-btn {
+      display: block; padding: 8px;
+      border: 1px solid rgba(201,168,76,0.28);
+      border-radius: 3px; color: rgba(201,168,76,0.65);
+      font-size: 0.7rem; text-decoration: none; text-align: center;
+      font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s;
+    }
+    .upgrade-plan-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .upgrade-plan-btn--gold {
+      background: rgba(201,168,76,0.08);
+      border-color: rgba(201,168,76,0.45); color: var(--gold);
+    }
+    .upgrade-plan-btn--gold:hover { background: rgba(201,168,76,0.16); }
 
     /* ── Random Button ── */
     .random-btn {
@@ -485,30 +613,21 @@
 
     /* ── Card Image in 鑑定書 ── */
     .kantei-card-img {
-      width: 100%;
-      aspect-ratio: 5/7;
-      object-fit: cover;
-      border-radius: 4px;
-      display: block;
-      background: var(--surface2);
-      margin-bottom: 6px;
+      width: 100%; aspect-ratio: 5/7; object-fit: cover;
+      border-radius: 2px; display: block;
+      background: #111; margin-bottom: 6px;
+      border: 1px solid rgba(201,168,76,0.22);
     }
     .kantei-card-img.reversed { transform: rotate(180deg); }
     .kantei-card-img-placeholder {
-      display: none;
-      width: 100%;
-      aspect-ratio: 5/7;
-      background: var(--surface2);
-      border-radius: 4px;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      color: var(--border);
-      margin-bottom: 6px;
+      display: none; width: 100%; aspect-ratio: 5/7;
+      background: rgba(201,168,76,0.04);
+      border: 1px solid rgba(201,168,76,0.14);
+      border-radius: 2px; align-items: center; justify-content: center;
+      font-size: 1.8rem; color: rgba(201,168,76,0.22); margin-bottom: 6px;
     }
     .img-missing .kantei-card-img { display: none; }
     .img-missing .kantei-card-img-placeholder { display: flex; }
-    .kantei-card-chip-orient { font-size: 0.62rem; color: var(--muted); display: block; margin-top: 3px; }
   </style>
 </head>
 <body>
@@ -656,8 +775,11 @@
   <div class="output-area" id="ume-output-area">
     <div class="kantei-wrap" id="kantei-preview">
       <div class="kantei-header">
+        <div class="kantei-ornament"><div class="kantei-ornament-line"></div><div class="kantei-ornament-diamond"></div><div class="kantei-ornament-line"></div></div>
         <div class="kantei-brand">黒烏タロット</div>
-        <div class="kantei-tagline">転職の本音、教えます</div>
+        <div class="kantei-tagline">CAREER TAROT READING</div>
+        <div class="kantei-doc-num" id="kantei-doc-num"></div>
+        <div class="kantei-ornament" style="margin-top:12px;margin-bottom:0"><div class="kantei-ornament-line"></div><div class="kantei-ornament-diamond"></div><div class="kantei-ornament-line"></div></div>
       </div>
       <div class="kantei-body">
         <div class="kantei-block">
@@ -674,8 +796,28 @@
         </div>
       </div>
       <div class="kantei-footer">
+        <div class="kantei-ornament" style="margin-bottom:14px"><div class="kantei-ornament-line"></div><div class="kantei-ornament-diamond"></div><div class="kantei-ornament-line"></div></div>
         <div class="kantei-closing">甘い言葉より、本当の答えを。🖤</div>
         <div class="kantei-sig">黒烏タロット ｜ @kurogarasu_tarot</div>
+      </div>
+    </div>
+    <div class="kantei-upgrade">
+      <div class="kantei-upgrade-heading">▼ より深い鑑定をご希望の方へ</div>
+      <div class="kantei-upgrade-row">
+        <div class="kantei-upgrade-card">
+          <div class="upgrade-plan-label">TAKE</div>
+          <div class="upgrade-plan-name">決断プラン</div>
+          <div class="upgrade-plan-price">¥6,000</div>
+          <div class="upgrade-plan-desc">ケルト十字10枚<br>転職の全体像を解読</div>
+          <a class="upgrade-plan-btn" href="https://naillamer.theshop.jp/items/143583433" target="_blank" rel="noopener">詳しく見る</a>
+        </div>
+        <div class="kantei-upgrade-card kantei-upgrade-card--featured">
+          <div class="upgrade-plan-label">MATSU</div>
+          <div class="upgrade-plan-name">本気プラン</div>
+          <div class="upgrade-plan-price">¥15,000</div>
+          <div class="upgrade-plan-desc">複合展開15枚以上<br>転職タイミング最適化</div>
+          <a class="upgrade-plan-btn upgrade-plan-btn--gold" href="https://naillamer.theshop.jp/items/143583486" target="_blank" rel="noopener">詳しく見る</a>
+        </div>
       </div>
     </div>
     <div class="output-actions">
@@ -1390,6 +1532,10 @@ ${question || '（未入力）'}
 }
 
 function showKantei(question, cardData, readingText) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('kantei-doc-num').textContent =
+    `鑑定日　${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())}`;
   document.getElementById('kantei-q').textContent = question || '（未入力）';
   const spreadLabels = ['現在', '障壁', 'その先'];
   document.getElementById('kantei-cards').innerHTML = cardData.map((c, i) => {
