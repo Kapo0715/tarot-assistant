@@ -528,11 +528,17 @@
       display: block; margin-top: 3px;
     }
     .kantei-reading {
-      font-size: 0.87rem; line-height: 2.05; white-space: pre-wrap;
+      font-size: 0.87rem; line-height: 2.05;
       word-break: break-all; color: #d5d5d5;
       padding: 16px; background: rgba(124,58,237,0.06);
       border-radius: 2px; border: 1px solid rgba(124,58,237,0.16);
     }
+    .kantei-section-label {
+      display: block; margin-top: 14px; margin-bottom: 4px;
+      font-family: 'Noto Serif JP', serif; font-size: 0.78rem;
+      color: var(--gold); letter-spacing: 0.1em; font-weight: 600;
+    }
+    .kantei-section-label:first-child { margin-top: 0; }
     .kantei-footer {
       text-align: center; padding: 16px 20px 22px;
       border-top: 1px solid rgba(201,168,76,0.18);
@@ -1464,8 +1470,8 @@ async function generateUme() {
   const prompt = `あなたは「黒烏タロット」という転職専門の占い師です。
 口調: 丁寧だが率直、辛口リアル系。一文は短く（体言止め可）、絵文字は使わない。
 
-以下の3枚のカードをもとに、有料鑑定（迷いプラン）の鑑定文を800字程度で書いてください。
-締めの言葉は不要です。各ブロックの間には空行を1行入れること。
+以下の3枚のカードをもとに、有料鑑定（迷いプラン）の鑑定文を1000〜1200字で書いてください。
+締めの言葉は不要です。
 
 【相談者の質問】
 ${question || '（未入力）'}
@@ -1479,18 +1485,16 @@ ${question || '（未入力）'}
 カード2（障壁）- ${cardData[1].meaning}
 カード3（その先）- ${cardData[2].meaning}
 
-【必須構成】3枚のスプレッド（現在→障壁→その先）の流れを軸に、1本の鑑定文として書くこと：
+【出力フォーマット】必ず以下の見出しと空行を使って3ブロックで出力すること：
 
-【現在】カード1から、今の自分・職場の本質を具体的に描写する
-・読んだ人が「私のことを見ている」と感じるくらい具体的に
+【現在】
+（カード1の内容。読んだ人が「私のことを見ている」と感じるくらい具体的に。3〜5文）
 
-【障壁】カード2から、転職を阻んでいるものを断言する
-・「〜かもしれない」は使わず断言する
-・恐怖・執着・思い込みを言語化する
+【障壁】
+（カード2の内容。「〜かもしれない」は使わず断言する。恐怖・執着・思い込みを言語化。3〜5文）
 
-【その先】カード3から、動いた先を正直に伝える
-・希望と現実を両方示す
-・前向きかつ静かなトーンで締める`;
+【その先】
+（カード3の内容。希望と現実を両方示す。前向きかつ静かなトーンで締める。3〜5文）`;
 
   const btn = document.getElementById('ume-gen-btn');
   btn.disabled = true;
@@ -1556,7 +1560,10 @@ function showKantei(question, cardData, readingText) {
       </div>
     `;
   }).join('');
-  document.getElementById('kantei-reading').textContent = readingText;
+  const readingEl = document.getElementById('kantei-reading');
+  readingEl.innerHTML = readingText
+    .replace(/【(現在|障壁|その先)】/g, '<span class="kantei-section-label">【$1】</span>')
+    .replace(/\n/g, '<br>');
   const area = document.getElementById('ume-output-area');
   area.classList.add('visible');
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1568,7 +1575,7 @@ function copyKantei() {
   const cards = Array.from(chips).map((el, i) =>
     `カード${i+1}（${el.querySelector('.kantei-card-chip-pos').textContent}）: ${el.querySelector('.kantei-card-chip-name').textContent}（${el.querySelector('.kantei-card-chip-orient').textContent}）`
   ).join('\n');
-  const reading = document.getElementById('kantei-reading').textContent;
+  const reading = document.getElementById('kantei-reading').innerText;
   const text = `■ご相談\n${q}\n\n■カード\n${cards}\n\n■鑑定\n${reading}\n\n甘い言葉より、本当の答えを。🖤\n黒烏タロット | @kurogarasu_tarot`;
   navigator.clipboard.writeText(text).then(() => {
     const msg = document.getElementById('ume-copy-msg');
