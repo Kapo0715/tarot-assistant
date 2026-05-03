@@ -562,7 +562,7 @@
 
     <div class="card-slot">
       <div class="card-slot-header" onclick="toggleSlot(1)">
-        <span class="card-slot-label">カード 1</span>
+        <span class="card-slot-label">カード 1｜現在</span>
         <span class="card-slot-value" id="ume-sv1">タップして選択 ▾</span>
       </div>
       <div class="card-slot-body" id="ume-sb1" style="display:none">
@@ -576,7 +576,7 @@
 
     <div class="card-slot">
       <div class="card-slot-header" onclick="toggleSlot(2)">
-        <span class="card-slot-label">カード 2</span>
+        <span class="card-slot-label">カード 2｜障壁</span>
         <span class="card-slot-value" id="ume-sv2">タップして選択 ▾</span>
       </div>
       <div class="card-slot-body" id="ume-sb2" style="display:none">
@@ -590,7 +590,7 @@
 
     <div class="card-slot">
       <div class="card-slot-header" onclick="toggleSlot(3)">
-        <span class="card-slot-label">カード 3</span>
+        <span class="card-slot-label">カード 3｜その先</span>
         <span class="card-slot-value" id="ume-sv3">タップして選択 ▾</span>
       </div>
       <div class="card-slot-body" id="ume-sb3" style="display:none">
@@ -1235,25 +1235,25 @@ async function generateUme() {
 【相談者の質問】
 ${question || '（未入力）'}
 
-【カード1】${cardData[0].card.name}（${cardData[0].posLabel}）
-【カード2】${cardData[1].card.name}（${cardData[1].posLabel}）
-【カード3】${cardData[2].card.name}（${cardData[2].posLabel}）
+【カード1・現在】${cardData[0].card.name}（${cardData[0].posLabel}）→ 今の自分・職場の本質
+【カード2・障壁】${cardData[1].card.name}（${cardData[1].posLabel}）→ 転職を阻んでいるもの
+【カード3・その先】${cardData[2].card.name}（${cardData[2].posLabel}）→ 動いた先に待っているもの
 
 【各カードの転職文脈での解釈】
-カード1 - ${cardData[0].meaning}
-カード2 - ${cardData[1].meaning}
-カード3 - ${cardData[2].meaning}
+カード1（現在）- ${cardData[0].meaning}
+カード2（障壁）- ${cardData[1].meaning}
+カード3（その先）- ${cardData[2].meaning}
 
-【必須構成】3枚のカードを統合して1本の鑑定文として書くこと：
+【必須構成】3枚のスプレッド（現在→障壁→その先）の流れを軸に、1本の鑑定文として書くこと：
 
-【現状】3枚の流れから今の状態を具体的に描写する
+【現在】カード1から、今の自分・職場の本質を具体的に描写する
 ・読んだ人が「私のことを見ている」と感じるくらい具体的に
 
-【核心】相談に対する答えを断言する
+【障壁】カード2から、転職を阻んでいるものを断言する
 ・「〜かもしれない」は使わず断言する
-・今すべきことを1つに絞って伝える
+・恐怖・執着・思い込みを言語化する
 
-【展望】この先どうなるかを正直に伝える
+【その先】カード3から、動いた先を正直に伝える
 ・希望と現実を両方示す
 ・前向きかつ静かなトーンで締める`;
 
@@ -1298,8 +1298,10 @@ ${question || '（未入力）'}
 
 function showKantei(question, cardData, readingText) {
   document.getElementById('kantei-q').textContent = question || '（未入力）';
+  const spreadLabels = ['現在', '障壁', 'その先'];
   document.getElementById('kantei-cards').innerHTML = cardData.map((c, i) => `
     <div class="kantei-card-chip">
+      <span class="kantei-card-chip-pos">${spreadLabels[i]}</span>
       <span class="kantei-card-chip-name">${c.card.name}</span>
       <span class="kantei-card-chip-pos">${c.posLabel}</span>
     </div>
