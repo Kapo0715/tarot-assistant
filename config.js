@@ -1,12 +1,12 @@
 const CONFIG = {
-  VERSION: '2.3',
+  VERSION: '2.4',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
   BASE_URL_UME: 'https://naillamer.theshop.jp/items/143583349',
   BASE_URL_MATSU: 'https://naillamer.theshop.jp/items/143583486',
 
   UPSELL: {
     '前進・出発系': {
-      text: 'このタイミングを逃さないために、転職タイミングカレンダーで最適な日を知る方法があります（松プラン）',
+      text: 'このタイミングを逃さないために、転職タイミングカレンダーで最適な日を知る方法があります（本気プラン）',
       plan: 'matsu'
     },
     '不安・迷い系': {

@@ -888,7 +888,7 @@ function showOutput(text, modeLabel) {
     const card = CARDS[selectedCard];
     const upsell = CONFIG.UPSELL[card.category] || CONFIG.UPSELL['その他'];
     const url = upsell.plan === 'matsu' ? CONFIG.BASE_URL_MATSU : CONFIG.BASE_URL_UME;
-    const btnLabel = upsell.plan === 'matsu' ? '松プラン を見る →' : '梅プラン ¥3,000 を見る →';
+    const btnLabel = upsell.plan === 'matsu' ? '本気プラン ¥15,000 を見る →' : '迷いプラン ¥3,000 を見る →';
     document.getElementById('upsell-text').textContent = upsell.text;
     document.getElementById('upsell-btn').href = url;
     document.getElementById('upsell-btn').textContent = btnLabel;
