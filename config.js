@@ -1,5 +1,5 @@
 const CONFIG = {
-  VERSION: '2.5',
+  VERSION: '2.6',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
   BASE_URL_UME: 'https://naillamer.theshop.jp/items/143583349',
   BASE_URL_MATSU: 'https://naillamer.theshop.jp/items/143583486',
