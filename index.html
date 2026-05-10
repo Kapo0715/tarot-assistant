@@ -634,6 +634,60 @@
     }
     .img-missing .kantei-card-img { display: none; }
     .img-missing .kantei-card-img-placeholder { display: flex; }
+
+    /* ── LUMNIS ── */
+    .plan-btn--lumnis { border-color: var(--gold); color: var(--gold-l); }
+    .plan-btn--lumnis.selected { background: rgba(201,168,76,0.12); border-color: var(--gold); color: var(--gold); }
+    .plan-toggle .plan-btn--lumnis { grid-column: 1 / -1; }
+
+    .lumnis-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 0.9rem;
+      padding: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .lumnis-input:focus { border-color: var(--gold); }
+    .lumnis-input::placeholder { color: var(--muted); }
+
+    .lumnis-badge { color: var(--gold-l) !important; }
+    .lumnis-badge::after { background: rgba(201,168,76,0.2) !important; }
+
+    .lumnis-destiny-num {
+      text-align: center;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      padding: 12px 0 16px;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+      margin-bottom: 16px;
+    }
+    .lumnis-dest-sub {
+      display: block;
+      font-size: 0.7rem;
+      color: rgba(201,168,76,0.5);
+      letter-spacing: 0.12em;
+      margin-top: 4px;
+    }
+
+    .lumnis-action-btn {
+      background: rgba(201,168,76,0.1);
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      color: var(--gold);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 0.9rem;
+      padding: 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .lumnis-action-btn:hover { background: rgba(201,168,76,0.2); }
   </style>
 </head>
 <body>
@@ -668,6 +722,10 @@
       <span class="plan-name">本気</span>
       <span class="plan-price">¥15,000</span>
       <span class="plan-soon">準備中</span>
+    </button>
+    <button class="plan-btn plan-btn--lumnis" onclick="setPlan(this,'lumnis')">
+      <span class="plan-name">✨ 数秘LUMNIS</span>
+      <span class="plan-price">LINE返信文</span>
     </button>
   </div>
 </section>
@@ -834,6 +892,38 @@
   </div>
 
 </div><!-- /flow-ume -->
+
+<div id="flow-lumnis" style="display:none">
+
+  <section>
+    <div class="label">① お客様の名前（任意）</div>
+    <input type="text" class="lumnis-input" id="lumnis-name" placeholder="例: 田中　※「さん」不要">
+  </section>
+
+  <section>
+    <div class="label">② 生年月日</div>
+    <input type="date" class="lumnis-input" id="lumnis-date" oninput="updateLumnisBtn()">
+  </section>
+
+  <section>
+    <button class="generate-btn" id="lumnis-gen-btn" onclick="generateLumnis()" disabled>運命数を計算して返信文を作る</button>
+  </section>
+
+  <div class="output-area" id="lumnis-output-area">
+    <div class="output-badge lumnis-badge">LUMNIS 返信文</div>
+    <div class="lumnis-destiny-num" id="lumnis-destiny-display">
+      <span id="lumnis-dest-num"></span>
+      <span class="lumnis-dest-sub" id="lumnis-dest-sub"></span>
+    </div>
+    <div class="output-text" id="lumnis-output-text"></div>
+    <div class="output-actions">
+      <button class="lumnis-action-btn" onclick="copyLumnis()">コピー</button>
+      <button class="reset-btn" onclick="resetLumnis()">作り直す</button>
+    </div>
+    <div class="copy-msg hidden" id="lumnis-copy-msg"></div>
+  </div>
+
+</div><!-- /flow-lumnis -->
 
 <!-- Settings Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="onOverlayClick(event)">
@@ -1398,8 +1488,9 @@ function setPlan(el, plan) {
   currentPlan = plan;
   document.querySelectorAll('.plan-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
-  document.getElementById('flow-free').style.display = plan === 'free' ? 'block' : 'none';
-  document.getElementById('flow-ume').style.display  = plan === 'ume'  ? 'block' : 'none';
+  document.getElementById('flow-free').style.display   = plan === 'free'   ? 'block' : 'none';
+  document.getElementById('flow-ume').style.display    = plan === 'ume'    ? 'block' : 'none';
+  document.getElementById('flow-lumnis').style.display = plan === 'lumnis' ? 'block' : 'none';
 }
 
 // ── Ume: Card Slots ──
@@ -1587,6 +1678,80 @@ function copyKantei() {
 
 function resetUme() {
   document.getElementById('ume-output-area').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── LUMNIS ──
+const LUMNIS_READINGS = {
+  1:  { master: false, essence: "1は、開拓の数。\n自分で道を切り開く力を持っています。", money: "お金の流れも、「待つ」より「動く」で開きます。\n行動を起こした瞬間に、流れが変わりやすい数字です。\n一歩踏み出すたびに、豊かさが応えてくれます。" },
+  2:  { master: false, essence: "2は、縁の数。\n繋がりの中に、豊かさの種があります。", money: "ひとりで頑張るより、誰かと組む時に収入の扉が開きます。\n人への丁寧さと気配りが、そのままお金の流れになる数字です。\nあなたの豊かさは、必ず「人」から来ます。" },
+  3:  { master: false, essence: "3は、創造の数。\n表現することが、そのまま収入になります。", money: "好きなこと、感じたことを外に出すほど豊かさが増す数字です。\n「自分なんて」と抑えるほど、お金の流れも細くなります。\nあなたの感性は、資産です。" },
+  4:  { master: false, essence: "4は、積み上げの数。\n着実に重ねることが、本物の豊かさを作ります。", money: "近道より、一歩ずつ積む道があなたに合っています。\n時間をかけて築いたものほど、崩れない豊かさになる数字です。\n今やっていることを、信じてください。" },
+  5:  { master: false, essence: "5は、変化の数。\n動き続けることで、豊かさが流れ込みます。", money: "固定した場所、固定した方法にこだわると流れが止まります。\n変化をポジティブに受け取れるほど、お金の入り口が増える数字です。\n「変わること」が、あなたの最大の強みです。" },
+  6:  { master: false, essence: "6は、愛と調和の数。\n与える行為が、豊かさを呼び込みます。", money: "身の回りを整え、人との関係を大切にするほどお金が安定します。\n「もらう前に与える」が、あなたに合ったお金の法則です。\n愛情は、最強の豊かさのエネルギーです。" },
+  7:  { master: false, essence: "7は、探求の数。\n深く知ることが、最大の資産になります。", money: "専門性や知識、洞察力がそのまま収入の源になりやすい数字です。\n表面だけを追わず、本質を掘り下げるほど豊かさが安定します。\nあなたの「知りたい」という気持ちは、武器です。" },
+  8:  { master: false, essence: "8は、豊かさの数。\n数秘でもっともお金と縁が深い数字のひとつです。", money: "大きな視点を持ち、スケールを広げるほど豊かさも大きくなります。\nただし、力の使い方が重要な数字でもあります。\n自分と周囲のために使う時、8は最大の力を発揮します。" },
+  9:  { master: false, essence: "9は、循環の数。\n手放すほど、大きくなって返ってきます。", money: "「執着しない」「与え続ける」が、あなたの豊かさの鍵です。\n循環を信じて動けるほど、お金の流れは豊かになります。\n9が示しているのは、「もう十分にある」という感覚です。" },
+  11: { master: true,  essence: "11は、光のナンバー。\n直感と感受性が、豊かさへの道を示します。", money: "論理より先に「感じる」が来る時、それがサインです。\n直感を信じて動いた時ほど、お金の流れが整いやすい数字です。\n11を持つ人は、見えない流れを掴む力があります。" },
+  22: { master: true,  essence: "22は、大地のナンバー。\n大きなビジョンを現実に落とす力を持っています。", money: "スケールを小さくまとめると、豊かさも小さくなります。\n「自分にはそこまでできない」という声を手放すほど、数字が本来の力を発揮します。\n22は、現実を変えるために生まれてきた数字です。" },
+  33: { master: true,  essence: "33は、愛のナンバー。\n人の役に立つことが、最大の豊かさを生みます。", money: "奉仕と愛情が、循環の核心にある数字です。\n「誰かのために」という動機が最も力強く、お金の流れを呼び込みます。\n33は、愛が豊かさそのものであることを知っています。" }
+};
+
+function calcDestinyNumber(dateStr) {
+  const digits = dateStr.replace(/\D/g, '');
+  if (digits.length < 8) return null;
+  let sum = digits.split('').reduce((a, d) => a + parseInt(d), 0);
+  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
+    sum = String(sum).split('').reduce((a, d) => a + parseInt(d), 0);
+  }
+  return sum;
+}
+
+function buildLumnisReply(name, destinyNum) {
+  const r = LUMNIS_READINGS[destinyNum];
+  if (!r) return null;
+  const prefix = name ? `${name}さん、` : '';
+  const masterLine = r.master ? '\nマスターナンバーをお持ちです。' : '';
+  return `${prefix}送ってくれてありがとうございます。\nさっそく読んでいきますね。\n\nあなたの運命数は【${destinyNum}】です。${masterLine}\n\n${r.essence}\n\n${r.money}\n\n---\n\n数字はまだ、語り続けています。\n\nGLEAMプランでは\n・今年のお金の流れ\n・豊かさが動きやすい時期\n・今すぐ使えるアドバイス\nをお伝えしています。\n\nご興味があれば：\n${CONFIG.LUMNIS_GLEAM_URL}\n\n何かあればいつでもどうぞ。✨`;
+}
+
+function updateLumnisBtn() {
+  const date = document.getElementById('lumnis-date').value;
+  document.getElementById('lumnis-gen-btn').disabled = !date;
+}
+
+function generateLumnis() {
+  const name = document.getElementById('lumnis-name').value.trim().replace(/さん$/, '').trim();
+  const dateVal = document.getElementById('lumnis-date').value;
+  const destinyNum = calcDestinyNumber(dateVal);
+  if (!destinyNum || !LUMNIS_READINGS[destinyNum]) {
+    alert('生年月日を正しく入力してください。');
+    return;
+  }
+  const r = LUMNIS_READINGS[destinyNum];
+  document.getElementById('lumnis-dest-num').textContent = `運命数 【${destinyNum}】`;
+  document.getElementById('lumnis-dest-sub').textContent = r.master ? 'マスターナンバー' : '';
+  document.getElementById('lumnis-output-text').textContent = buildLumnisReply(name, destinyNum);
+  const area = document.getElementById('lumnis-output-area');
+  area.classList.add('visible');
+  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyLumnis() {
+  const text = document.getElementById('lumnis-output-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const msg = document.getElementById('lumnis-copy-msg');
+    msg.textContent = 'コピーしました';
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 2000);
+  });
+}
+
+function resetLumnis() {
+  document.getElementById('lumnis-output-area').classList.remove('visible');
+  document.getElementById('lumnis-name').value = '';
+  document.getElementById('lumnis-date').value = '';
+  document.getElementById('lumnis-gen-btn').disabled = true;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

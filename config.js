@@ -1,5 +1,6 @@
 const CONFIG = {
-  VERSION: '3.1',
+  VERSION: '3.2',
+  LUMNIS_GLEAM_URL: 'https://naillamer.theshop.jp/items/144171599',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
   BASE_URL_UME: 'https://naillamer.theshop.jp/items/143583349',
   BASE_URL_TAKE: 'https://naillamer.theshop.jp/items/143583433',
