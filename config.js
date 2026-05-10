@@ -1,10 +1,10 @@
 const CONFIG = {
   VERSION: '3.2',
-  LUMNIS_GLEAM_URL: 'https://naillamer.theshop.jp/items/144171599',
+  LUMNIS_GLEAM_URL: 'https://uranai.short.gy/QauUxW',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
-  BASE_URL_UME: 'https://naillamer.theshop.jp/items/143583349',
-  BASE_URL_TAKE: 'https://naillamer.theshop.jp/items/143583433',
-  BASE_URL_MATSU: 'https://naillamer.theshop.jp/items/143583486',
+  BASE_URL_UME: 'https://uranai.short.gy/jhh7Nb',
+  BASE_URL_TAKE: 'https://uranai.short.gy/V6yA8m',
+  BASE_URL_MATSU: 'https://uranai.short.gy/NL0Rxn',
 
   UPSELL: {
     '前進・出発系': {
