@@ -1784,14 +1784,15 @@ function getCalcSteps(digits) {
     parts.push(String(prev).split('').join('+') + '=' + sum);
   }
   const masterNote = (sum === 11 || sum === 22 || sum === 33) ? '（マスターナンバー・そこで止める）' : '';
-  return digits + ' → ' + parts.join(' → ') + masterNote;
+  return parts.join(' → ') + masterNote;
 }
 
-function buildLumnisReply(destinyNum) {
+function buildLumnisReply(destinyNum, digits) {
   const r = LUMNIS_READINGS[destinyNum];
   if (!r) return null;
   const masterLine = r.master ? '\nマスターナンバーをお持ちです。' : '';
-  return `送ってくれてありがとうございます。\nさっそく読んでいきますね。\n\nあなたの運命数は【${destinyNum}】です。${masterLine}\n\n${r.essence}\n\n${r.money}\n\n${r.advice}\n\n---\n\n数字はまだ、語り続けています。\n\nGLEAMプランでは\n・今年のお金の流れ\n・豊かさが動きやすい時期\n・今すぐ使えるアドバイス\nをお伝えしています。\n\nご興味があれば：\n${LUMNIS_GLEAM_URL}\n\n何かあればいつでもどうぞ。✨`;
+  const calcStr = getCalcSteps(digits);
+  return `送ってくれてありがとうございます。\nさっそく読んでいきますね。\n\nあなたの生年月日${digits}の運命数の計算は\n${digits} → ${calcStr}\n\n運命数は【${destinyNum}】です。${masterLine}\n\n${r.essence}\n\n${r.money}\n\n${r.advice}\n\n---\n\n数字はまだ、語り続けています。\n\nGLEAMプランでは\n・今年のお金の流れ\n・豊かさが動きやすい時期\n・今すぐ使えるアドバイス\nをお伝えしています。\n\nご興味があれば：\n${LUMNIS_GLEAM_URL}\n\n何かあればいつでもどうぞ。✨`;
 }
 
 function updateLumnisBtn() {
@@ -1813,8 +1814,8 @@ function generateLumnis() {
   const r = LUMNIS_READINGS[destinyNum];
   document.getElementById('lumnis-dest-num').textContent = `運命数 【${destinyNum}】`;
   document.getElementById('lumnis-dest-sub').textContent = r.master ? 'マスターナンバー' : '';
-  document.getElementById('lumnis-calc-steps').textContent = getCalcSteps(digits);
-  document.getElementById('lumnis-output-text').textContent = buildLumnisReply(destinyNum);
+  document.getElementById('lumnis-calc-steps').textContent = digits + ' → ' + getCalcSteps(digits);
+  document.getElementById('lumnis-output-text').textContent = buildLumnisReply(destinyNum, digits);
   const area = document.getElementById('lumnis-output-area');
   area.classList.add('visible');
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });

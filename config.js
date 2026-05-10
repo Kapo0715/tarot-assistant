@@ -1,5 +1,5 @@
 const CONFIG = {
-  VERSION: '3.2',
+  VERSION: '3.6',
   LUMNIS_GLEAM_URL: 'https://uranai.short.gy/QauUxW',
   CLOSING_TEXT: '甘い言葉より、本当の答えを。🖤',
   BASE_URL_UME: 'https://uranai.short.gy/jhh7Nb',
