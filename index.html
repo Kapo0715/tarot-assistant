@@ -688,6 +688,16 @@
       transition: background 0.15s;
     }
     .lumnis-action-btn:hover { background: rgba(201,168,76,0.2); }
+
+    .lumnis-calc-steps {
+      font-size: 0.72rem;
+      color: rgba(201,168,76,0.45);
+      text-align: center;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+      word-break: break-all;
+      line-height: 1.8;
+    }
   </style>
 </head>
 <body>
@@ -896,13 +906,8 @@
 <div id="flow-lumnis" style="display:none">
 
   <section>
-    <div class="label">① お客様の名前（任意）</div>
-    <input type="text" class="lumnis-input" id="lumnis-name" placeholder="例: 田中　※「さん」不要">
-  </section>
-
-  <section>
-    <div class="label">② 生年月日</div>
-    <input type="date" class="lumnis-input" id="lumnis-date" oninput="updateLumnisBtn()">
+    <div class="label">① 生年月日</div>
+    <input type="text" class="lumnis-input" id="lumnis-date" maxlength="8" inputmode="numeric" placeholder="例: 19900315（8桁）" oninput="updateLumnisBtn()">
   </section>
 
   <section>
@@ -915,6 +920,7 @@
       <span id="lumnis-dest-num"></span>
       <span class="lumnis-dest-sub" id="lumnis-dest-sub"></span>
     </div>
+    <div class="lumnis-calc-steps" id="lumnis-calc-steps"></div>
     <div class="output-text" id="lumnis-output-text"></div>
     <div class="output-actions">
       <button class="lumnis-action-btn" onclick="copyLumnis()">コピー</button>
@@ -1682,6 +1688,7 @@ function resetUme() {
 }
 
 // ── LUMNIS ──
+const LUMNIS_GLEAM_URL = 'https://naillamer.theshop.jp/items/144171599';
 const LUMNIS_READINGS = {
   1:  { master: false, essence: "1は、開拓の数。\n自分で道を切り開く力を持っています。", money: "お金の流れも、「待つ」より「動く」で開きます。\n行動を起こした瞬間に、流れが変わりやすい数字です。\n一歩踏み出すたびに、豊かさが応えてくれます。" },
   2:  { master: false, essence: "2は、縁の数。\n繋がりの中に、豊かさの種があります。", money: "ひとりで頑張るより、誰かと組む時に収入の扉が開きます。\n人への丁寧さと気配りが、そのままお金の流れになる数字です。\nあなたの豊かさは、必ず「人」から来ます。" },
@@ -1707,31 +1714,47 @@ function calcDestinyNumber(dateStr) {
   return sum;
 }
 
-function buildLumnisReply(name, destinyNum) {
+function getCalcSteps(digits) {
+  const parts = [digits.split('').join('+')];
+  let sum = digits.split('').reduce((a, d) => a + parseInt(d), 0);
+  parts[0] += '=' + sum;
+  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
+    const prev = sum;
+    sum = String(sum).split('').reduce((a, d) => a + parseInt(d), 0);
+    parts.push(String(prev).split('').join('+') + '=' + sum);
+  }
+  const masterNote = (sum === 11 || sum === 22 || sum === 33) ? '（マスターナンバー・そこで止める）' : '';
+  return digits + ' → ' + parts.join(' → ') + masterNote;
+}
+
+function buildLumnisReply(destinyNum) {
   const r = LUMNIS_READINGS[destinyNum];
   if (!r) return null;
-  const prefix = name ? `${name}さん、` : '';
   const masterLine = r.master ? '\nマスターナンバーをお持ちです。' : '';
-  return `${prefix}送ってくれてありがとうございます。\nさっそく読んでいきますね。\n\nあなたの運命数は【${destinyNum}】です。${masterLine}\n\n${r.essence}\n\n${r.money}\n\n---\n\n数字はまだ、語り続けています。\n\nGLEAMプランでは\n・今年のお金の流れ\n・豊かさが動きやすい時期\n・今すぐ使えるアドバイス\nをお伝えしています。\n\nご興味があれば：\n${CONFIG.LUMNIS_GLEAM_URL}\n\n何かあればいつでもどうぞ。✨`;
+  return `送ってくれてありがとうございます。\nさっそく読んでいきますね。\n\nあなたの運命数は【${destinyNum}】です。${masterLine}\n\n${r.essence}\n\n${r.money}\n\n---\n\n数字はまだ、語り続けています。\n\nGLEAMプランでは\n・今年のお金の流れ\n・豊かさが動きやすい時期\n・今すぐ使えるアドバイス\nをお伝えしています。\n\nご興味があれば：\n${LUMNIS_GLEAM_URL}\n\n何かあればいつでもどうぞ。✨`;
 }
 
 function updateLumnisBtn() {
-  const date = document.getElementById('lumnis-date').value;
-  document.getElementById('lumnis-gen-btn').disabled = !date;
+  const digits = document.getElementById('lumnis-date').value.replace(/\D/g, '');
+  document.getElementById('lumnis-gen-btn').disabled = digits.length !== 8;
 }
 
 function generateLumnis() {
-  const name = document.getElementById('lumnis-name').value.trim().replace(/さん$/, '').trim();
-  const dateVal = document.getElementById('lumnis-date').value;
-  const destinyNum = calcDestinyNumber(dateVal);
+  const digits = document.getElementById('lumnis-date').value.replace(/\D/g, '');
+  if (digits.length !== 8) {
+    alert('生年月日を8桁で入力してください（例: 19900315）');
+    return;
+  }
+  const destinyNum = calcDestinyNumber(digits);
   if (!destinyNum || !LUMNIS_READINGS[destinyNum]) {
-    alert('生年月日を正しく入力してください。');
+    alert('計算に失敗しました。生年月日を確認してください。');
     return;
   }
   const r = LUMNIS_READINGS[destinyNum];
   document.getElementById('lumnis-dest-num').textContent = `運命数 【${destinyNum}】`;
   document.getElementById('lumnis-dest-sub').textContent = r.master ? 'マスターナンバー' : '';
-  document.getElementById('lumnis-output-text').textContent = buildLumnisReply(name, destinyNum);
+  document.getElementById('lumnis-calc-steps').textContent = getCalcSteps(digits);
+  document.getElementById('lumnis-output-text').textContent = buildLumnisReply(destinyNum);
   const area = document.getElementById('lumnis-output-area');
   area.classList.add('visible');
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1749,8 +1772,8 @@ function copyLumnis() {
 
 function resetLumnis() {
   document.getElementById('lumnis-output-area').classList.remove('visible');
-  document.getElementById('lumnis-name').value = '';
   document.getElementById('lumnis-date').value = '';
+  document.getElementById('lumnis-calc-steps').textContent = '';
   document.getElementById('lumnis-gen-btn').disabled = true;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
