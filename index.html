@@ -330,6 +330,7 @@
   <textarea class="output-textarea" id="output-text" oninput="updateCounters()"></textarea>
   <div class="char-counter" id="char-counter"></div>
   <div class="warn-banner warn-danger" id="banned-warning" style="display:none"></div>
+  <div class="warn-banner warn-caution" id="risky-warning" style="display:none"></div>
   <div class="warn-banner warn-caution" id="url-warning" style="display:none">⚠️ 誘導URLはまだ仮置きです（【　】のまま）。出品後に正しいURLへ差し替えてください。</div>
   <button class="continue-btn" id="continue-btn" style="display:none" onclick="continueWriting()">続きを追記する（AI）</button>
   <div class="output-actions">
@@ -372,6 +373,8 @@ const CONFIG = {
 };
 
 const BANNED_WORDS = ['絶対', '必ず', '100%', '確実'];
+// 煽り・脅しに読める表現（消費者契約法の不当勧誘リスク）。検出したら黄色警告
+const RISKY_PATTERNS = ['このままだと', 'このままでは', '手遅れ', '不幸になり', '不幸が続', '縁が切れ', '取り返しのつかない', '二度と戻', '祟り', '呪い', '悪霊'];
 
 // few-shotお手本（buildAIPromptで文体模倣に使用）。account key → {consult, example}
 const FEWSHOTS = {
@@ -736,7 +739,14 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
     itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」').join('\n') + '\n※相談文全体から運の詰まりポイントをひとつ診断し、①原因→②今の流れ→③今日からの整え方の順で展開してください。';
   }
 
-  const targetLine = plan.approx ? ('目安は' + plan.target + '字程度です。') : (plan.target + '字以上を目指してください。');
+  // 文字数は「■以降の鑑定本文」で数える（冒頭の共感パートとアップセルは含めない）
+  const ALLOC = {
+    free: '本文（■以降）の目安は300字程度。読み解きは200〜250字、締めまでコンパクトに。',
+    lite: '■項目の読み解きは400〜450字でじっくり。締め（今日からできる一手＋安心の一文）は100字前後。冒頭の共感パートは文字数に数えず、■以降の本文で500字以上。',
+    main: '各■項目の読み解きは500字前後でじっくり。まとめの項目は150字前後、締め（今日からできる一手＋安心の一文）は150字前後。冒頭の共感パートは文字数に数えず、■以降の本文で1,800字以上。',
+    deep: '各■項目の読み解きは600字前後で深く。30日の指針は300字前後、締めは200字前後。冒頭の共感パートは文字数に数えず、■以降の本文で3,500字以上。'
+  };
+  const targetLine = ALLOC[planKey];
 
   let rules = acc.key === 'kuroi'
     ? '・略奪成就を断定しない。お相手のご家族への言及、不幸を願う表現はしない。「バレる」等の恐怖を煽る表現も使わない\n・冒頭に必ず秘密厳守の一文を入れること（例:「このやりとりが外に出ることはありません。」）'
@@ -751,7 +761,7 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
 
   const few = FEWSHOTS[acc.key];
   const fewBlock = few
-    ? '【お手本】あなたの過去の鑑定文の例です。文体・構成・温度感を忠実に踏襲してください（内容のコピーはしない。※お手本は短縮版なので、実際は目標文字数に従うこと）。\n\n' +
+    ? '【お手本】あなたの過去の鑑定文の例です。文体・構成・温度感を忠実に踏襲してください。※お手本は本鑑定（3問）形式の短縮版です。文体だけを真似て、今回のプランの項目数と文字数の指定に従うこと。内容や言い回しをそのままコピーしない。\n\n' +
       '（お手本の相談文）\n' + few.consult + '\n\n（お手本の鑑定文）\n' + few.example + '\n\n'
     : '';
 
@@ -759,7 +769,7 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
 'この鑑定文ひとつで、相談者の今夜の気持ちが少し軽くなるかどうかが決まります。大勢向けの文章ではなく、ひとりの人に宛てた手紙のつもりで書いてください。\n\n' +
 '【絶対に守るルール】\n' +
 '・未来を断定しない。「絶対」「必ず」「100%」「確実」は使用禁止。「〜の流れがあります」「〜しやすい時期です」「〜可能性が高いです」等の言い回しを使うこと\n' +
-'・煽らない・脅さない・引き止めない。不安を煽る表現や期限を焦らせる表現は使わない\n' +
+'・煽らない・脅さない・引き止めない。不安を煽る表現や期限を焦らせる表現は使わない（「このままだと不幸になる」「手遅れになる」「縁が切れる」等の言い回しは禁止）\n' +
 '・医療・法律・投資の助言はしない。深刻な内容（自傷・多額の負債・脅迫等）が含まれる場合は、鑑定を続ける前に専門窓口への相談を案内して締めること\n' +
 (rules ? rules + '\n' : '') +
 '\n【文章の質のルール】\n' +
@@ -768,6 +778,10 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
 '・カードの意味を辞書のように説明しない（「悲しみを表すカードです」はNG）。相談者の状況の心情描写に翻訳すること（「胸の奥にまだ痛みが残っている、そんな状態が視えます」のように）\n' +
 '・最後は精神論で終わらせず、今日からできる具体的な行動をひとつ示してから、安心の一文で締めること\n' +
 '・AIらしさを出さない: 「さらに」「以上のことから」「なお」等の定型接続語を多用しない／文の長さに長短をつける（体言止めも時々）／箇条書きに逃げない／「〜と思われます」を連発しない／絵文字はごく控えめに\n\n' +
+'【質問の型への答え方】\n' +
+'・時期を聞かれたら: 日付や時期を断定せず、幅で語る（「1〜2ヶ月のうちに動きが出やすい流れです」「季節が変わる頃にひとつ節目が来そうです」など）\n' +
+'・二択（待つべきか諦めるべきか等）を聞かれたら: どちらかを指定しない。それぞれに進んだ場合の流れを示した上で、相談者が自分で決めるための判断軸をひとつ言葉にして返す\n' +
+'・お相手の気持ちを聞かれたら: 「好き/嫌い」の二値で断定せず、いまの心の状態として描写する\n\n' +
 fewBlock +
 '【相談文】\n' + consult + '\n\n' +
 '【今回の鑑定内容】\n' + itemsDesc + '\n\n' +
@@ -837,7 +851,7 @@ function buildContinuePrompt() {
   const plan = PLANS[state.plan];
   const consult = document.getElementById('consult-text').value.trim();
   return acc.aiPersona + '\n\n' +
-    '以下はここまで書いた鑑定文です。まだ目標文字数（' + plan.target + '字以上）に届いていません。同じトーン・構成を保ったまま、内容を薄めず具体性を足す形で、追加の段落を書いてください。見出しの重複や「以上です」等の締めの繰り返しは避け、自然につながる追加本文のみを出力してください。\n\n' +
+    '以下はここまで書いた鑑定文です。まだ目標文字数（冒頭の共感パートを除く■以降の本文で' + plan.target + '字以上）に届いていません。同じトーン・構成を保ったまま、内容を薄めず具体性を足す形で、追加の段落を書いてください。見出しの重複や「以上です」等の締めの繰り返しは避け、自然につながる追加本文のみを出力してください。\n\n' +
     '【相談文】\n' + consult + '\n\n【ここまでの鑑定文】\n' + state.coreText;
 }
 
@@ -946,14 +960,24 @@ function finalizeOutput() {
 }
 
 // ── Counters / warnings ──
+// 文字数は「■の鑑定本文」のみ数える: 冒頭の共感パート（最初の■より前）と「■ 最後に」以降（アップセル）を除外
+function countBodyChars(text) {
+  let t = text;
+  const up = t.indexOf('■ 最後に');
+  if (up !== -1) t = t.slice(0, up);
+  const first = t.indexOf('■');
+  if (first !== -1) t = t.slice(first);
+  return Array.from(t.trim()).length;
+}
+
 function updateCounters() {
   const text = document.getElementById('output-text').value;
-  const count = Array.from(text).length;
+  const count = countBodyChars(text);
   const plan = PLANS[state.plan];
   const met = plan.approx ? count >= 250 : count >= plan.target;
   const label = plan.approx
-    ? ('現在' + count + '文字／目安' + plan.target + '字')
-    : ('現在' + count + '文字／目標' + plan.target + '字以上');
+    ? ('本文' + count + '文字（共感・ご案内除く）／目安' + plan.target + '字')
+    : ('本文' + count + '文字（共感・ご案内除く）／目標' + plan.target + '字以上');
   const counterEl = document.getElementById('char-counter');
   counterEl.textContent = label;
   counterEl.className = 'char-counter ' + (met ? 'counter-ok' : 'counter-bad');
@@ -965,6 +989,15 @@ function updateCounters() {
     bannedEl.textContent = '⚠️ 断定語が含まれています。修正してください。（該当: ' + banned.join('、') + '）';
   } else {
     bannedEl.style.display = 'none';
+  }
+
+  const risky = RISKY_PATTERNS.filter(w => text.includes(w));
+  const riskyEl = document.getElementById('risky-warning');
+  if (risky.length) {
+    riskyEl.style.display = 'block';
+    riskyEl.textContent = '⚠️ 煽り・脅しに読める表現があります。言い換えを検討してください。（該当: ' + risky.join('、') + '）';
+  } else {
+    riskyEl.style.display = 'none';
   }
 
   document.getElementById('url-warning').style.display = text.includes('【') ? 'block' : 'none';
