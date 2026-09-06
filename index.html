@@ -138,7 +138,11 @@
   textarea::placeholder { color: var(--muted); }
 
   /* ── Mode toggle ── */
-  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 14px 0 10px; }
+  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 14px 0 10px; }
+  .claude-panel { display: none; margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .claude-panel p { font-size: 0.8rem; margin: 0 0 8px; color: var(--muted); }
+  .claude-panel textarea { width: 100%; min-height: 120px; box-sizing: border-box; }
+  .claude-sub-btn { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--ink); font-size: 0.82rem; cursor: pointer; }
   .mode-btn {
     background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
     color: var(--muted); font-size: 0.82rem; padding: 10px; cursor: pointer; transition: all 0.15s;
@@ -306,9 +310,18 @@
   <div class="mode-toggle">
     <button class="mode-btn selected" id="mode-template" onclick="setMode('template')">テンプレート</button>
     <button class="mode-btn" id="mode-ai" onclick="setMode('ai')">AI生成 <span class="badge">Gemini</span></button>
+    <button class="mode-btn" id="mode-claude" onclick="setMode('claude')">Claudeで作る</button>
   </div>
   <button class="generate-btn" id="generate-btn" onclick="generate()" disabled>鑑定文を作る</button>
   <p class="no-key-warn" id="no-key-warn">APIキーが未設定です。<a onclick="openSettings()">こちらから設定</a>してください。</p>
+
+  <div class="claude-panel" id="claude-panel">
+    <p>① プロンプトをコピーしました。<b>Claudeアプリ</b>を開いて貼り付け、送信してください。</p>
+    <button class="claude-sub-btn" onclick="copyClaudePrompt()">プロンプトをもう一度コピー</button>
+    <p>② Claudeの回答（鑑定文の部分）をコピーして、ここに貼り付けてください。</p>
+    <textarea id="claude-answer" placeholder="Claudeの回答を貼り付け"></textarea>
+    <button class="generate-btn" style="margin-top:8px" onclick="finishClaude()">チェックして仕上げる</button>
+  </div>
 </section>
 
 <div class="output-area" id="output-area">
@@ -349,8 +362,9 @@
 
 <script>
 const CONFIG = {
-  VERSION: '1.0.0',
+  VERSION: '1.1.0',
   GEMINI_MODEL: 'gemini-flash-latest',
+  GEMINI_FALLBACK: 'gemini-flash-lite-latest',
   URLS: {
     TO_MAIN: '【本鑑定URL（出品後に差し替え）】',
     TO_DEEP: '【深掘りURL（出品後に差し替え）】'
@@ -560,7 +574,10 @@ function setMode(m) {
   state.mode = m;
   document.getElementById('mode-template').classList.toggle('selected', m === 'template');
   document.getElementById('mode-ai').classList.toggle('selected', m === 'ai');
+  document.getElementById('mode-claude').classList.toggle('selected', m === 'claude');
   document.getElementById('no-key-warn').style.display = (m === 'ai' && !getApiKey()) ? 'block' : 'none';
+  document.getElementById('generate-btn').textContent = m === 'claude' ? 'Claude用プロンプトを作る' : '鑑定文を作る';
+  if (m !== 'claude') document.getElementById('claude-panel').style.display = 'none';
 }
 
 function updateItemsPreview() {
@@ -681,9 +698,34 @@ headingBlocks + deepExtra + '\n\n' +
 '（最後に: 上記の理由の要約 一文＋安心の一文で締める。安心の一文の例:「この鑑定はここで終わりです」「信じるかどうかはあなた次第です」等のニュアンスを、あなたの口調で）';
 }
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 async function callGemini(prompt) {
+  // 混雑時は自動リトライ→軽量モデルへフォールバック
+  const attempts = [
+    { model: CONFIG.GEMINI_MODEL, wait: 0 },
+    { model: CONFIG.GEMINI_MODEL, wait: 2000 },
+    { model: CONFIG.GEMINI_FALLBACK, wait: 1000 },
+    { model: CONFIG.GEMINI_FALLBACK, wait: 3000 }
+  ];
+  let lastErr = null;
+  for (const a of attempts) {
+    if (a.wait) await sleep(a.wait);
+    try {
+      return await callGeminiOnce(a.model, prompt);
+    } catch (e) {
+      lastErr = e;
+      const retriable = e.status === 429 || e.status === 503 ||
+        /high demand|overload|quota|resource has been exhausted|unavailable/i.test(e.message);
+      if (!retriable) throw e;
+    }
+  }
+  throw new Error('Geminiが混み合っています。少し待ってからもう一度お試しください。急ぐ場合は「Claudeで作る」か「テンプレート」をご利用ください。\n（詳細: ' + lastErr.message + '）');
+}
+
+async function callGeminiOnce(model, prompt) {
   const apiKey = getApiKey();
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + CONFIG.GEMINI_MODEL + ':generateContent?key=' + apiKey;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -700,7 +742,9 @@ async function callGemini(prompt) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err.error && err.error.message) || ('HTTP ' + res.status));
+    const e = new Error((err.error && err.error.message) || ('HTTP ' + res.status));
+    e.status = res.status;
+    throw e;
   }
   const data = await res.json();
   const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
@@ -738,6 +782,15 @@ async function generate() {
 
   try {
     let core;
+    if (state.mode === 'claude') {
+      state.claudePrompt = '以下の指示に従って、鑑定文の本文だけを出力してください。前置き・説明・確認の質問は不要です。\n\n' + buildAIPrompt(acc, planKey, consult, cards, theme);
+      try { await navigator.clipboard.writeText(state.claudePrompt); } catch (e) {}
+      document.getElementById('claude-answer').value = '';
+      const panel = document.getElementById('claude-panel');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     if (state.mode === 'ai') {
       const apiKey = getApiKey();
       if (!apiKey) { openSettings(); return; }
@@ -750,8 +803,22 @@ async function generate() {
   } catch (e) {
     alert('生成中にエラーが発生しました:\n' + e.message);
   } finally {
-    btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '鑑定文を作る';
+    btn.disabled = false; btn.classList.remove('loading');
+    btn.textContent = state.mode === 'claude' ? 'Claude用プロンプトを作る' : '鑑定文を作る';
   }
+}
+
+function copyClaudePrompt() {
+  if (!state.claudePrompt) { alert('先に「Claude用プロンプトを作る」を押してください'); return; }
+  navigator.clipboard.writeText(state.claudePrompt).then(() => showCopyMsg('プロンプトをコピーしました'))
+    .catch(() => alert('コピーできませんでした。もう一度お試しください。'));
+}
+
+function finishClaude() {
+  const ans = document.getElementById('claude-answer').value.trim();
+  if (!ans) { alert('Claudeの回答を貼り付けてください'); return; }
+  state.coreText = ans;
+  finalizeOutput();
 }
 
 async function continueWriting() {
@@ -789,7 +856,7 @@ function finalizeOutput() {
   const upsell = buildUpsellBlock(acc, state.plan);
   const full = state.coreText.trim() + '\n\n' + upsell;
   document.getElementById('output-text').value = full;
-  document.getElementById('output-mode-tag').textContent = state.mode === 'ai' ? 'AI生成' : 'テンプレート';
+  document.getElementById('output-mode-tag').textContent = state.mode === 'ai' ? 'AI生成' : (state.mode === 'claude' ? 'Claude' : 'テンプレート');
   const area = document.getElementById('output-area');
   area.classList.add('visible');
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });
