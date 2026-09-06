@@ -944,6 +944,8 @@ async function continueWriting() {
   }
 }
 
+function isRealUrl(url) { return !!url && url.indexOf('【') === -1; }
+
 function buildUpsellBlock(acc, planKey) {
   const u = acc.upsell;
   const urls = CONFIG.URLS[acc.key];
@@ -951,9 +953,14 @@ function buildUpsellBlock(acc, planKey) {
   if (planKey === 'deep') {
     body = u.final;
   } else if (planKey === 'main') {
-    body = u.complete + '\n\n' + u.toDeep.replace('{URL}', urls.DEEP);
+    // 深掘りが未出品(URL仮置き)の間は案内を出さず、完結＋締めのみ
+    body = isRealUrl(urls.DEEP)
+      ? u.complete + '\n\n' + u.toDeep.replace('{URL}', urls.DEEP)
+      : u.complete + '\n\n' + u.final;
   } else {
-    body = u.complete + '\n\n' + u.toMain.replace('{URL}', urls.MAIN);
+    body = isRealUrl(urls.MAIN)
+      ? u.complete + '\n\n' + u.toMain.replace('{URL}', urls.MAIN)
+      : u.complete + '\n\n' + u.final;
   }
   return '■ 最後に\n\n' + body;
 }
