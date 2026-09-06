@@ -1,935 +1,330 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>黒烏タロット｜鑑定アシスタント</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>みかづき鑑定室｜鑑定アシスタント</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #0d0d0d;
-      --surface: #1a1a1a;
-      --surface2: #222;
-      --text: #f0f0f0;
-      --muted: #777;
-      --accent: #7c3aed;
-      --accent-h: #6d28d9;
-      --accent-l: #a78bfa;
-      --border: #2e2e2e;
-      --danger: #ef4444;
-      --gold: #c9a84c;
-      --gold-l: #e8d5a0;
-      --gold-dim: rgba(201,168,76,0.12);
-    }
+  :root {
+    --bg: #FBF3EF;
+    --surface: #F3E3DC;
+    --surface2: #ECD8CC;
+    --text: #4A332C;
+    --muted: #A38A82;
+    --accent: #C99A8C;
+    --accent-h: #B98572;
+    --accent-l: #C99A8C;
+    --border: #E3C9BD;
+    --danger: #C0392B;
+    --warn-bg: #FFF7DA;
+    --warn-text: #7A5B00;
+    --ok: #2E7D46;
+  }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Noto Sans JP', sans-serif;
-      min-height: 100vh;
-      padding: 16px 16px 48px;
-      max-width: 560px;
-      margin: 0 auto;
-    }
+  body.theme-kuroi {
+    --bg: #101024;
+    --surface: #181832;
+    --surface2: #20203c;
+    --text: #EDEDF7;
+    --muted: #8686a8;
+    --accent: #9B9BD0;
+    --accent-h: #8484c2;
+    --accent-l: #B7B7E3;
+    --border: #2c2c4a;
+    --danger: #e8746a;
+    --warn-bg: #2c2510;
+    --warn-text: #e8cf7a;
+    --ok: #6fce8e;
+  }
 
-    /* ── Header ── */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 0 20px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 28px;
-    }
-    .header-title { text-align: center; flex: 1; }
-    header h1 {
-      font-family: 'Noto Serif JP', serif;
-      font-size: 1.2rem;
-      color: var(--accent-l);
-      letter-spacing: 0.08em;
-    }
-    header p {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 5px;
-    }
-    .settings-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      width: 38px;
-      height: 38px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.15s, color 0.15s;
-      flex-shrink: 0;
-    }
-    .settings-btn:hover { border-color: var(--accent-l); color: var(--accent-l); }
-    .settings-btn.has-key { border-color: var(--accent); color: var(--accent-l); }
-    .header-spacer { width: 38px; flex-shrink: 0; }
+  body.theme-shiori {
+    --bg: #F2F9FA;
+    --surface: #E7F3F5;
+    --surface2: #D9EBEE;
+    --text: #2E4A4F;
+    --muted: #7FA6AC;
+    --accent: #8FBFC9;
+    --accent-h: #79AEB9;
+    --accent-l: #6FA3AE;
+    --border: #CFE6E9;
+    --danger: #C0392B;
+    --warn-bg: #FFF2CF;
+    --warn-text: #6b5100;
+    --ok: #2E7D46;
+  }
 
-    /* ── Sections ── */
-    section { margin-bottom: 28px; }
-    .label {
-      font-size: 0.68rem;
-      color: var(--muted);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
+    min-height: 100vh;
+    padding: 16px 16px 56px;
+    max-width: 560px;
+    margin: 0 auto;
+    transition: background 0.2s, color 0.2s;
+  }
 
-    /* ── Textarea ── */
-    textarea {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      padding: 14px;
-      resize: vertical;
-      min-height: 96px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    textarea:focus { border-color: var(--accent); }
-    textarea::placeholder { color: var(--muted); }
+  h1, h2, .serif { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; }
 
-    /* ── Card Grid ── */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-    }
-    .card-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 6px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .card-item:active { transform: scale(0.96); }
-    .card-item.selected { background: var(--accent); border-color: var(--accent); }
-    .card-num { font-size: 0.6rem; color: var(--muted); display: block; margin-bottom: 3px; }
-    .card-item.selected .card-num { color: rgba(255,255,255,0.6); }
-    .card-name { font-family: 'Noto Serif JP', serif; font-size: 0.82rem; display: block; }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 22px;
+  }
+  .header-title { text-align: center; flex: 1; }
+  header h1 { font-size: 1.1rem; color: var(--accent-h); letter-spacing: 0.06em; }
+  header p { font-size: 0.68rem; color: var(--muted); margin-top: 4px; }
+  .settings-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); width: 38px; height: 38px; font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s, color 0.15s; flex-shrink: 0;
+  }
+  .settings-btn:hover, .settings-btn.has-key { border-color: var(--accent); color: var(--accent-h); }
+  .header-spacer { width: 38px; flex-shrink: 0; }
+  .version-tag { font-size: 0.6rem; color: var(--muted); }
 
-    /* ── Position Toggle ── */
-    .position-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .pos-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.95rem;
-      padding: 14px;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .pos-btn.selected { background: var(--accent); border-color: var(--accent); }
+  section { margin-bottom: 24px; }
+  .label {
+    font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%; background: var(--accent);
+    color: #fff; font-size: 0.6rem; flex-shrink: 0;
+  }
 
-    /* ── Mode Toggle ── */
-    .mode-toggle {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .mode-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.82rem;
-      padding: 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mode-btn.selected { background: var(--surface); border-color: var(--accent-l); color: var(--accent-l); }
-    .mode-btn .badge {
-      display: inline-block;
-      font-size: 0.6rem;
-      background: var(--accent);
-      color: #fff;
-      border-radius: 4px;
-      padding: 1px 5px;
-      margin-left: 4px;
-      vertical-align: middle;
-    }
+  /* ── Account tabs ── */
+  .account-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .account-btn {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--muted); padding: 12px 4px; text-align: center; cursor: pointer;
+    transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .account-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .account-btn .acc-name { display: block; font-family: "Hiragino Mincho ProN","Yu Mincho",serif; font-size: 0.92rem; font-weight: 700; }
+  .account-btn .acc-sub { display: block; font-size: 0.58rem; margin-top: 3px; opacity: 0.85; line-height: 1.3; }
 
-    /* ── Generate Button ── */
-    .generate-btn {
-      width: 100%;
-      background: var(--accent);
-      border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 1rem;
-      font-weight: 500;
-      padding: 16px;
-      min-height: 54px;
-      cursor: pointer;
-      transition: background 0.15s;
-      letter-spacing: 0.04em;
-    }
-    .generate-btn:hover { background: var(--accent-h); }
-    .generate-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
-    .generate-btn.loading { background: var(--accent-h); cursor: wait; }
+  /* ── Plan buttons ── */
+  .plan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .plan-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); padding: 12px 6px; text-align: center; cursor: pointer;
+    transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .plan-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .plan-btn .plan-name { display: block; font-weight: 700; font-size: 0.85rem; }
+  .plan-btn .plan-price { display: block; font-size: 0.72rem; margin-top: 3px; opacity: 0.85; }
+  .plan-btn .plan-target { display: block; font-size: 0.62rem; margin-top: 2px; opacity: 0.7; }
 
-    /* ── No-key Warning ── */
-    .no-key-warn {
-      font-size: 0.78rem;
-      color: var(--muted);
-      text-align: center;
-      margin-top: 8px;
-      display: none;
-    }
-    .no-key-warn a { color: var(--accent-l); cursor: pointer; text-decoration: underline; }
+  .items-preview {
+    margin-top: 10px; font-size: 0.76rem; color: var(--muted); line-height: 1.8;
+    background: var(--surface); border: 1px dashed var(--border); border-radius: 8px; padding: 10px 12px;
+  }
 
-    /* ── Output ── */
-    .output-area {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 16px 16px;
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-    .output-area.visible { display: block; }
+  /* ── Textarea ── */
+  textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: inherit; font-size: 0.9rem; line-height: 1.7;
+    padding: 14px; resize: vertical; min-height: 110px; outline: none; transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+  /* ── Mode toggle ── */
+  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 14px 0 10px; }
+  .mode-btn {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); font-size: 0.82rem; padding: 10px; cursor: pointer; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mode-btn.selected { background: var(--surface); border-color: var(--accent); color: var(--accent-h); font-weight: 700; }
+  .mode-btn .badge {
+    display: inline-block; font-size: 0.58rem; background: var(--accent); color: #fff;
+    border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle;
+  }
 
-    .output-badge {
-      font-size: 0.65rem;
-      color: var(--accent-l);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .output-badge::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .output-mode-tag {
-      font-size: 0.6rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 2px 6px;
-      color: var(--muted);
-      margin-left: 4px;
-    }
+  /* ── Generate button ── */
+  .generate-btn {
+    width: 100%; background: var(--accent); border: none; border-radius: 12px; color: #fff;
+    font-family: inherit; font-size: 1rem; font-weight: 700; padding: 16px; min-height: 54px;
+    cursor: pointer; transition: background 0.15s; letter-spacing: 0.03em;
+  }
+  .generate-btn:hover { background: var(--accent-h); }
+  .generate-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+  .generate-btn.loading { background: var(--accent-h); cursor: wait; }
 
-    .output-text {
-      font-size: 0.95rem;
-      line-height: 1.9;
-      white-space: pre-wrap;
-      word-break: break-all;
-      margin-bottom: 18px;
-    }
+  .no-key-warn { font-size: 0.76rem; color: var(--muted); text-align: center; margin-top: 8px; display: none; }
+  .no-key-warn a { color: var(--accent-h); cursor: pointer; text-decoration: underline; }
 
-    .output-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .copy-btn {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      padding: 13px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .copy-btn:hover { background: var(--accent-h); }
-    .reset-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      padding: 13px;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .reset-btn:hover { border-color: var(--muted); color: var(--text); }
+  /* ── Output ── */
+  .output-area { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 16px 16px; display: none; animation: fadeIn 0.3s ease; }
+  .output-area.visible { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    .copy-msg {
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--accent-l);
-      min-height: 22px;
-      margin-top: 10px;
-      transition: opacity 0.3s;
-    }
-    .copy-msg.hidden { opacity: 0; }
+  .output-badge {
+    font-size: 0.65rem; color: var(--accent-h); letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .output-badge::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .output-mode-tag { font-size: 0.6rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; color: var(--muted); margin-left: 4px; }
+  .edit-hint { font-size: 0.7rem; color: var(--muted); margin-bottom: 10px; }
 
-    /* ── Upsell Section ── */
-    .upsell-section {
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 0;
-      margin: 16px 0 8px;
-    }
-    .upsell-text {
-      font-size: 0.82rem;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-bottom: 12px;
-    }
-    .upsell-btn {
-      display: block;
-      background: transparent;
-      border: 1px solid var(--accent);
-      border-radius: 8px;
-      color: var(--accent-l);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.85rem;
-      padding: 11px;
-      text-align: center;
-      text-decoration: none;
-      transition: background 0.15s;
-    }
-    .upsell-btn:hover { background: rgba(124,58,237,0.15); }
+  .output-textarea {
+    font-size: 0.92rem; line-height: 1.85; min-height: 340px; margin-bottom: 8px;
+    background: var(--bg);
+  }
 
-    /* ── Settings Modal ── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 100;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
-    .modal {
-      background: var(--surface);
-      border-radius: 16px 16px 0 0;
-      padding: 24px 20px 40px;
-      width: 100%;
-      max-width: 560px;
-      transform: translateY(20px);
-      transition: transform 0.25s;
-    }
-    .modal-overlay.open .modal { transform: translateY(0); }
+  .char-counter { font-size: 0.76rem; text-align: right; margin-bottom: 10px; font-weight: 700; }
+  .char-counter.counter-ok { color: var(--ok); }
+  .char-counter.counter-bad { color: var(--danger); }
 
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .modal-title { font-family: 'Noto Serif JP', serif; font-size: 1rem; color: var(--accent-l); }
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 4px 8px;
-    }
+  .warn-banner { border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; line-height: 1.6; margin-bottom: 10px; }
+  .warn-danger { background: rgba(192,57,43,0.1); border: 1px solid var(--danger); color: var(--danger); }
+  .warn-caution { background: var(--warn-bg); border: 1px solid var(--warn-text); color: var(--warn-text); }
 
-    .modal-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.06em; }
-    .modal-input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.88rem;
-      padding: 12px 14px;
-      outline: none;
-      transition: border-color 0.2s;
-      margin-bottom: 8px;
-    }
-    .modal-input:focus { border-color: var(--accent); }
-    .modal-input::placeholder { color: var(--muted); }
-    .modal-hint { font-size: 0.7rem; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
-    .modal-hint a { color: var(--accent-l); }
+  .continue-btn {
+    width: 100%; background: transparent; border: 1px dashed var(--accent); border-radius: 10px;
+    color: var(--accent-h); font-size: 0.85rem; padding: 12px; cursor: pointer; margin-bottom: 10px;
+    transition: background 0.15s;
+  }
+  .continue-btn:hover { background: rgba(0,0,0,0.03); }
+  .continue-btn:disabled { opacity: 0.5; cursor: wait; }
 
-    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .modal-save {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      padding: 13px;
-      cursor: pointer;
-    }
-    .modal-clear {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      padding: 13px;
-      cursor: pointer;
-    }
+  .output-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .copy-btn {
+    background: var(--accent); border: none; border-radius: 8px; color: #fff; font-family: inherit;
+    font-size: 0.9rem; padding: 13px; cursor: pointer; transition: background 0.15s;
+  }
+  .copy-btn:hover { background: var(--accent-h); }
+  .reset-btn {
+    background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted);
+    font-family: inherit; font-size: 0.9rem; padding: 13px; cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--muted); color: var(--text); }
 
-    .api-status {
-      font-size: 0.72rem;
-      margin-top: 12px;
-      text-align: center;
-      min-height: 20px;
-    }
-    .api-status.ok { color: #4ade80; }
-    .api-status.err { color: var(--danger); }
+  .copy-msg { text-align: center; font-size: 0.78rem; color: var(--ok); min-height: 22px; margin-top: 10px; transition: opacity 0.3s; }
+  .copy-msg.hidden { opacity: 0; }
 
-    .version-tag {
-      font-size: 0.62rem;
-      color: var(--muted);
-      margin-left: 6px;
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-
-    /* ── Plan Selector ── */
-    .plan-toggle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-    .plan-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.72rem;
-      padding: 10px 4px;
-      cursor: pointer;
-      transition: all 0.15s;
-      line-height: 1.4;
-      text-align: center;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .plan-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .plan-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .plan-btn .plan-name { display: block; font-weight: 500; }
-    .plan-btn .plan-price { display: block; font-size: 0.6rem; margin-top: 2px; opacity: 0.8; }
-    .plan-btn .plan-soon { display: block; font-size: 0.58rem; margin-top: 2px; opacity: 0.5; }
-
-    /* ── Card Slot (梅プラン) ── */
-    .card-slot { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
-    .card-slot-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 14px; cursor: pointer; transition: background 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .card-slot-header:hover { background: rgba(124,58,237,0.08); }
-    .card-slot-label { font-size: 0.8rem; color: var(--accent-l); font-weight: 500; }
-    .card-slot-value { font-size: 0.78rem; color: var(--muted); }
-    .card-slot-value.chosen { color: var(--text); }
-    .card-slot-body { padding: 0 12px 14px; border-top: 1px solid var(--border); }
-    .slot-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-
-    /* ── 鑑定書プレビュー（Premium） ── */
-    .kantei-wrap {
-      background: #050510;
-      border: 1px solid var(--gold);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      position: relative;
-    }
-    .kantei-wrap::before {
-      content: '';
-      position: absolute;
-      inset: 6px;
-      border: 1px solid rgba(201,168,76,0.16);
-      border-radius: 1px;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .kantei-ornament {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-    }
-    .kantei-ornament-line {
-      flex: 1; height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold), transparent);
-      opacity: 0.45;
-    }
-    .kantei-ornament-diamond {
-      width: 5px; height: 5px; background: var(--gold);
-      transform: rotate(45deg); flex-shrink: 0; opacity: 0.75;
-    }
-    .kantei-header {
-      text-align: center; padding: 22px 20px 18px;
-      border-bottom: 1px solid rgba(201,168,76,0.18);
-      position: relative; z-index: 1;
-    }
-    .kantei-brand {
-      font-family: 'Noto Serif JP', serif; font-size: 1.12rem;
-      color: var(--gold); letter-spacing: 0.22em; margin-bottom: 4px;
-    }
-    .kantei-tagline {
-      font-size: 0.6rem; color: rgba(201,168,76,0.48);
-      letter-spacing: 0.14em; margin-top: 2px;
-    }
-    .kantei-doc-num {
-      font-size: 0.54rem; color: rgba(201,168,76,0.3);
-      margin-top: 8px; letter-spacing: 0.08em;
-    }
-    .kantei-body { padding: 22px 18px; position: relative; z-index: 1; }
-    .kantei-block { margin-bottom: 22px; }
-    .kantei-block-label {
-      font-size: 0.56rem; color: var(--gold); letter-spacing: 0.2em;
-      text-transform: uppercase; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px; opacity: 0.72;
-    }
-    .kantei-block-label::after {
-      content: ''; flex: 1; height: 1px;
-      background: linear-gradient(to right, rgba(201,168,76,0.22), transparent);
-    }
-    .kantei-q-text {
-      font-size: 0.84rem; line-height: 1.85; color: #b8b8b8;
-      padding-left: 12px; border-left: 2px solid rgba(201,168,76,0.32);
-    }
-    .kantei-cards-row { display: flex; gap: 10px; }
-    .kantei-card-chip {
-      flex: 1; background: rgba(201,168,76,0.03);
-      border: 1px solid rgba(201,168,76,0.2);
-      border-radius: 3px; padding: 10px 5px; text-align: center;
-    }
-    .kantei-card-chip-pos {
-      font-size: 0.52rem; color: rgba(201,168,76,0.5);
-      display: block; letter-spacing: 0.1em; margin-bottom: 5px;
-    }
-    .kantei-card-chip-name {
-      font-family: 'Noto Serif JP', serif; font-size: 0.8rem;
-      color: var(--gold-l); display: block; margin-top: 5px;
-    }
-    .kantei-card-chip-orient {
-      font-size: 0.52rem; color: rgba(201,168,76,0.42);
-      display: block; margin-top: 3px;
-    }
-    .kantei-reading {
-      font-size: 0.87rem; line-height: 2.05;
-      word-break: break-all; color: #d5d5d5;
-      padding: 16px; background: rgba(124,58,237,0.06);
-      border-radius: 2px; border: 1px solid rgba(124,58,237,0.16);
-    }
-    .kantei-section-label {
-      display: block; margin-top: 14px; margin-bottom: 4px;
-      font-family: 'Noto Serif JP', serif; font-size: 0.78rem;
-      color: var(--gold); letter-spacing: 0.1em; font-weight: 600;
-    }
-    .kantei-section-label:first-child { margin-top: 0; }
-    .kantei-footer {
-      text-align: center; padding: 16px 20px 22px;
-      border-top: 1px solid rgba(201,168,76,0.18);
-      position: relative; z-index: 1;
-    }
-    .kantei-closing {
-      font-family: 'Noto Serif JP', serif; font-size: 0.87rem;
-      color: var(--gold); margin-bottom: 8px; letter-spacing: 0.06em;
-    }
-    .kantei-sig { font-size: 0.58rem; color: rgba(201,168,76,0.36); letter-spacing: 0.1em; }
-    /* Plan upgrade section */
-    .kantei-upgrade {
-      margin-bottom: 16px; padding: 16px;
-      background: rgba(201,168,76,0.02);
-      border: 1px solid rgba(201,168,76,0.14);
-      border-radius: 3px;
-    }
-    .kantei-upgrade-heading {
-      font-size: 0.65rem; color: rgba(201,168,76,0.55);
-      letter-spacing: 0.1em; text-align: center; margin-bottom: 14px;
-    }
-    .kantei-upgrade-row { display: flex; gap: 10px; }
-    .kantei-upgrade-card {
-      flex: 1; background: var(--surface);
-      border: 1px solid rgba(201,168,76,0.16);
-      border-radius: 4px; padding: 14px 10px; text-align: center;
-    }
-    .kantei-upgrade-card--featured {
-      border-color: rgba(201,168,76,0.38);
-      background: rgba(201,168,76,0.04);
-    }
-    .upgrade-plan-label {
-      font-size: 0.48rem; color: rgba(201,168,76,0.4);
-      letter-spacing: 0.18em; margin-bottom: 3px;
-    }
-    .upgrade-plan-name {
-      font-family: 'Noto Serif JP', serif; font-size: 0.88rem;
-      color: var(--gold); margin-bottom: 3px;
-    }
-    .upgrade-plan-price {
-      font-size: 1.05rem; font-weight: 700;
-      color: var(--gold-l); margin-bottom: 8px;
-    }
-    .upgrade-plan-desc {
-      font-size: 0.66rem; color: var(--muted);
-      line-height: 1.65; margin-bottom: 12px;
-    }
-    .upgrade-plan-btn {
-      display: block; padding: 8px;
-      border: 1px solid rgba(201,168,76,0.28);
-      border-radius: 3px; color: rgba(201,168,76,0.65);
-      font-size: 0.7rem; text-decoration: none; text-align: center;
-      font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s;
-    }
-    .upgrade-plan-btn:hover { border-color: var(--gold); color: var(--gold); }
-    .upgrade-plan-btn--gold {
-      background: rgba(201,168,76,0.08);
-      border-color: rgba(201,168,76,0.45); color: var(--gold);
-    }
-    .upgrade-plan-btn--gold:hover { background: rgba(201,168,76,0.16); }
-
-    /* ── Random Button ── */
-    .random-btn {
-      width: 100%;
-      background: transparent;
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-      color: var(--muted);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.85rem;
-      padding: 12px;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: border-color 0.15s, color 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .random-btn:hover { border-color: var(--accent-l); color: var(--accent-l); }
-
-    /* ── Card Image in 鑑定書 ── */
-    .kantei-card-img {
-      width: 100%; aspect-ratio: 5/7; object-fit: cover;
-      border-radius: 2px; display: block;
-      background: #111; margin-bottom: 6px;
-      border: 1px solid rgba(201,168,76,0.22);
-    }
-    .kantei-card-img.reversed { transform: rotate(180deg); }
-    .kantei-card-img-placeholder {
-      display: none; width: 100%; aspect-ratio: 5/7;
-      background: rgba(201,168,76,0.04);
-      border: 1px solid rgba(201,168,76,0.14);
-      border-radius: 2px; align-items: center; justify-content: center;
-      font-size: 1.8rem; color: rgba(201,168,76,0.22); margin-bottom: 6px;
-    }
-    .img-missing .kantei-card-img { display: none; }
-    .img-missing .kantei-card-img-placeholder { display: flex; }
-
-    /* ── LUMNIS ── */
-    .plan-btn--lumnis { border-color: var(--gold); color: var(--gold-l); }
-    .plan-btn--lumnis.selected { background: rgba(201,168,76,0.12); border-color: var(--gold); color: var(--gold); }
-    .plan-toggle .plan-btn--lumnis { grid-column: 1 / -1; }
-
-    .lumnis-input {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      padding: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .lumnis-input:focus { border-color: var(--gold); }
-    .lumnis-input::placeholder { color: var(--muted); }
-
-    .lumnis-badge { color: var(--gold-l) !important; }
-    .lumnis-badge::after { background: rgba(201,168,76,0.2) !important; }
-
-    .lumnis-destiny-num {
-      text-align: center;
-      font-family: 'Noto Serif JP', serif;
-      font-size: 1.4rem;
-      color: var(--gold);
-      letter-spacing: 0.1em;
-      padding: 12px 0 16px;
-      border-bottom: 1px solid rgba(201,168,76,0.2);
-      margin-bottom: 16px;
-    }
-    .lumnis-dest-sub {
-      display: block;
-      font-size: 0.7rem;
-      color: rgba(201,168,76,0.5);
-      letter-spacing: 0.12em;
-      margin-top: 4px;
-    }
-
-    .lumnis-action-btn {
-      background: rgba(201,168,76,0.1);
-      border: 1px solid var(--gold);
-      border-radius: 8px;
-      color: var(--gold);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 0.9rem;
-      padding: 13px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .lumnis-action-btn:hover { background: rgba(201,168,76,0.2); }
-
-    .lumnis-calc-steps {
-      font-size: 0.72rem;
-      color: rgba(201,168,76,0.45);
-      text-align: center;
-      letter-spacing: 0.04em;
-      margin-bottom: 16px;
-      word-break: break-all;
-      line-height: 1.8;
-    }
-  </style>
+  /* ── Settings modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: flex-end;
+    justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--surface); border-radius: 16px 16px 0 0; padding: 24px 20px 40px; width: 100%;
+    max-width: 560px; transform: translateY(20px); transition: transform 0.25s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-family: "Hiragino Mincho ProN","Yu Mincho",serif; font-size: 1rem; color: var(--accent-h); }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 4px 8px; }
+  .modal-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.05em; }
+  .modal-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: inherit; font-size: 0.88rem; padding: 12px 14px; outline: none;
+    transition: border-color 0.2s; margin-bottom: 8px;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-hint { font-size: 0.7rem; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .modal-hint a { color: var(--accent-h); }
+  .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .modal-save { background: var(--accent); border: none; border-radius: 8px; color: #fff; font-family: inherit; font-size: 0.9rem; padding: 13px; cursor: pointer; }
+  .modal-clear { background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-family: inherit; font-size: 0.9rem; padding: 13px; cursor: pointer; }
+  .api-status { font-size: 0.72rem; margin-top: 12px; text-align: center; min-height: 20px; }
+  .api-status.ok { color: var(--ok); }
+  .api-status.err { color: var(--danger); }
+</style>
 </head>
-<body>
+<body class="theme-kotoha" id="body">
 
 <header>
   <div class="header-spacer"></div>
   <div class="header-title">
-    <h1>黒烏タロット｜鑑定アシスタント</h1>
-    <p>無料鑑定（1枚引き）返信文ジェネレーター</p>
+    <h1>みかづき鑑定室｜鑑定アシスタント</h1>
+    <p>相談文を貼って、鑑定文を下書きするツール</p>
   </div>
   <button class="settings-btn" id="settings-btn" onclick="openSettings()" title="API設定">⚙</button>
-  <span class="version-tag" id="version-tag"></span>
 </header>
 
-<section id="plan-section">
-  <div class="label">プラン</div>
-  <div class="plan-toggle">
-    <button class="plan-btn selected" onclick="setPlan(this,'free')">
-      <span class="plan-name">無料</span>
-      <span class="plan-price">1枚引き</span>
+<section>
+  <div class="label"><span class="step-num">1</span>アカウントを選ぶ</div>
+  <div class="account-tabs">
+    <button class="account-btn selected" id="acc-kotoha" onclick="setAccount('kotoha')">
+      <span class="acc-name">ことは</span>
+      <span class="acc-sub">復縁タロット</span>
     </button>
-    <button class="plan-btn" onclick="setPlan(this,'ume')">
-      <span class="plan-name">迷い</span>
+    <button class="account-btn" id="acc-kuroi" onclick="setAccount('kuroi')">
+      <span class="acc-name">黒烏</span>
+      <span class="acc-sub">言えない恋のタロット</span>
+    </button>
+    <button class="account-btn" id="acc-shiori" onclick="setAccount('shiori')">
+      <span class="acc-name">栞奈</span>
+      <span class="acc-sub">お清め開運</span>
+    </button>
+  </div>
+</section>
+
+<section>
+  <div class="label"><span class="step-num">2</span>プランを選ぶ</div>
+  <div class="plan-grid">
+    <button class="plan-btn selected" id="plan-free" onclick="setPlan('free')">
+      <span class="plan-name">無料LINE相談</span>
+      <span class="plan-price">無料</span>
+      <span class="plan-target">目安300字</span>
+    </button>
+    <button class="plan-btn" id="plan-lite" onclick="setPlan('lite')">
+      <span class="plan-name">お試し</span>
+      <span class="plan-price">¥500</span>
+      <span class="plan-target">500字以上</span>
+    </button>
+    <button class="plan-btn" id="plan-main" onclick="setPlan('main')">
+      <span class="plan-name">本鑑定</span>
       <span class="plan-price">¥3,000</span>
+      <span class="plan-target">1,800字以上</span>
     </button>
-    <button class="plan-btn" disabled>
-      <span class="plan-name">決断</span>
-      <span class="plan-price">¥6,000</span>
-      <span class="plan-soon">準備中</span>
-    </button>
-    <button class="plan-btn" disabled>
-      <span class="plan-name">本気</span>
-      <span class="plan-price">¥15,000</span>
-      <span class="plan-soon">準備中</span>
-    </button>
-    <button class="plan-btn plan-btn--lumnis" onclick="setPlan(this,'lumnis')">
-      <span class="plan-name">✨ 数秘LUMNIS</span>
-      <span class="plan-price">LINE返信文</span>
+    <button class="plan-btn" id="plan-deep" onclick="setPlan('deep')">
+      <span class="plan-name">深掘り</span>
+      <span class="plan-price">¥5,000</span>
+      <span class="plan-target">3,500字以上</span>
     </button>
   </div>
-</section>
-
-<div id="flow-free">
-
-<section>
-  <div class="label">① 相談者の質問</div>
-  <textarea id="question" placeholder="受け取った質問をここに貼り付けてください"></textarea>
-  <button class="random-btn" onclick="randomFree()">🎴 ランダムで1枚引く</button>
+  <div class="items-preview" id="items-preview"></div>
 </section>
 
 <section>
-  <div class="label">② カードを選択</div>
-  <div class="card-grid" id="card-grid"></div>
-</section>
+  <div class="label"><span class="step-num">3</span>相談文を貼り付ける</div>
+  <textarea id="consult-text" placeholder="お客様から届いた相談文をここに貼り付けてください" oninput="updateGenerateBtn()"></textarea>
 
-<section>
-  <div class="label">③ 正位置 / 逆位置</div>
-  <div class="position-toggle">
-    <button class="pos-btn selected" id="btn-upright" onclick="setPosition('upright')">正位置</button>
-    <button class="pos-btn" id="btn-reversed" onclick="setPosition('reversed')">逆位置</button>
-  </div>
-</section>
-
-<section>
-  <div class="label">④ モード</div>
   <div class="mode-toggle">
     <button class="mode-btn selected" id="mode-template" onclick="setMode('template')">テンプレート</button>
     <button class="mode-btn" id="mode-ai" onclick="setMode('ai')">AI生成 <span class="badge">Gemini</span></button>
   </div>
-  <button class="generate-btn" id="generate-btn" onclick="generate()" disabled>返信文を作る</button>
+  <button class="generate-btn" id="generate-btn" onclick="generate()" disabled>鑑定文を作る</button>
   <p class="no-key-warn" id="no-key-warn">APIキーが未設定です。<a onclick="openSettings()">こちらから設定</a>してください。</p>
 </section>
 
 <div class="output-area" id="output-area">
-  <div class="output-badge">返信文 <span class="output-mode-tag" id="output-mode-tag"></span></div>
-  <div class="output-text" id="output-text"></div>
-  <div class="upsell-section" id="upsell-section" style="display:none">
-    <p class="upsell-text" id="upsell-text"></p>
-    <a class="upsell-btn" id="upsell-btn" href="#" target="_blank"></a>
-  </div>
+  <div class="output-badge">鑑定文 <span class="output-mode-tag" id="output-mode-tag"></span></div>
+  <p class="edit-hint">▼ 編集できます。送信前に必ず内容を確認してください。</p>
+  <textarea class="output-textarea" id="output-text" oninput="updateCounters()"></textarea>
+  <div class="char-counter" id="char-counter"></div>
+  <div class="warn-banner warn-danger" id="banned-warning" style="display:none"></div>
+  <div class="warn-banner warn-caution" id="url-warning" style="display:none">⚠️ 誘導URLはまだ仮置きです（【　】のまま）。出品後に正しいURLへ差し替えてください。</div>
+  <button class="continue-btn" id="continue-btn" style="display:none" onclick="continueWriting()">続きを追記する（AI）</button>
   <div class="output-actions">
-    <button class="copy-btn" onclick="copyText()">返信文のみ</button>
-    <button class="copy-btn" onclick="copyAll()">全部コピー</button>
+    <button class="copy-btn" onclick="copyOutput()">コピー</button>
+    <button class="reset-btn" onclick="resetOutput()">作り直す</button>
   </div>
-  <button class="reset-btn" style="width:100%;margin-top:8px" onclick="resetOutput()">作り直す</button>
-  <div class="copy-msg hidden" id="copy-msg">コピーしました</div>
+  <div class="copy-msg hidden" id="copy-msg"></div>
 </div>
-
-</div><!-- /flow-free -->
-
-<div id="flow-ume" style="display:none">
-
-  <section>
-    <div class="label">① 相談者の質問</div>
-    <textarea id="ume-question" placeholder="受け取った質問をここに貼り付けてください"></textarea>
-    <button class="random-btn" onclick="randomUme()">🎴 ランダムで3枚引く</button>
-  </section>
-
-  <section>
-    <div class="label">② カードを選択（3枚）</div>
-
-    <div class="card-slot">
-      <div class="card-slot-header" onclick="toggleSlot(1)">
-        <span class="card-slot-label">カード 1｜現在</span>
-        <span class="card-slot-value" id="ume-sv1">タップして選択 ▾</span>
-      </div>
-      <div class="card-slot-body" id="ume-sb1" style="display:none">
-        <div class="card-grid" id="ume-g1" style="margin-top:12px"></div>
-        <div class="slot-pos">
-          <button class="pos-btn selected" id="ume-p1u" onclick="setUmePos(1,'upright')">正位置</button>
-          <button class="pos-btn" id="ume-p1r" onclick="setUmePos(1,'reversed')">逆位置</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-slot">
-      <div class="card-slot-header" onclick="toggleSlot(2)">
-        <span class="card-slot-label">カード 2｜障壁</span>
-        <span class="card-slot-value" id="ume-sv2">タップして選択 ▾</span>
-      </div>
-      <div class="card-slot-body" id="ume-sb2" style="display:none">
-        <div class="card-grid" id="ume-g2" style="margin-top:12px"></div>
-        <div class="slot-pos">
-          <button class="pos-btn selected" id="ume-p2u" onclick="setUmePos(2,'upright')">正位置</button>
-          <button class="pos-btn" id="ume-p2r" onclick="setUmePos(2,'reversed')">逆位置</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-slot">
-      <div class="card-slot-header" onclick="toggleSlot(3)">
-        <span class="card-slot-label">カード 3｜その先</span>
-        <span class="card-slot-value" id="ume-sv3">タップして選択 ▾</span>
-      </div>
-      <div class="card-slot-body" id="ume-sb3" style="display:none">
-        <div class="card-grid" id="ume-g3" style="margin-top:12px"></div>
-        <div class="slot-pos">
-          <button class="pos-btn selected" id="ume-p3u" onclick="setUmePos(3,'upright')">正位置</button>
-          <button class="pos-btn" id="ume-p3r" onclick="setUmePos(3,'reversed')">逆位置</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <button class="generate-btn" id="ume-gen-btn" onclick="generateUme()" disabled>鑑定書を作る</button>
-  </section>
-
-  <div class="output-area" id="ume-output-area">
-    <div class="kantei-wrap" id="kantei-preview">
-      <div class="kantei-header">
-        <div class="kantei-ornament"><div class="kantei-ornament-line"></div><div class="kantei-ornament-diamond"></div><div class="kantei-ornament-line"></div></div>
-        <div class="kantei-brand">黒烏タロット</div>
-        <div class="kantei-tagline">CAREER TAROT READING</div>
-        <div class="kantei-doc-num" id="kantei-doc-num"></div>
-        <div class="kantei-ornament" style="margin-top:12px;margin-bottom:0"><div class="kantei-ornament-line"></div><div class="kantei-ornament-diamond"></div><div class="kantei-ornament-line"></div></div>
-      </div>
-      <div class="kantei-body">
-        <div class="kantei-block">
-          <div class="kantei-block-label">ご相談</div>
-          <div class="kantei-q-text" id="kantei-q"></div>
-        </div>
-        <div class="kantei-block">
-          <div class="kantei-block-label">カード</div>
-          <div class="kantei-cards-row" id="kantei-cards"></div>
-        </div>
-        <div class="kantei-block">
-          <div class="kantei-block-label">鑑定</div>
-          <div class="kantei-reading" id="kantei-reading"></div>
-        </div>
-      </div>
-      <div class="kantei-footer">
-        <div class="kantei-ornament" style="margin-bottom:14px"><div class="kantei-ornament-line"></div><div class="kantei-ornament-diamond"></div><div class="kantei-ornament-line"></div></div>
-        <div class="kantei-closing">甘い言葉より、本当の答えを。🖤</div>
-        <div class="kantei-sig">黒烏タロット ｜ @kurogarasu_tarot</div>
-      </div>
-    </div>
-    <div class="kantei-upgrade">
-      <div class="kantei-upgrade-heading">▼ より深い鑑定をご希望の方へ</div>
-      <div class="kantei-upgrade-row">
-        <div class="kantei-upgrade-card">
-          <div class="upgrade-plan-label">TAKE</div>
-          <div class="upgrade-plan-name">決断プラン</div>
-          <div class="upgrade-plan-price">¥6,000</div>
-          <div class="upgrade-plan-desc">ケルト十字10枚<br>転職の全体像を解読</div>
-          <a class="upgrade-plan-btn" href="https://uranai.short.gy/V6yA8m" target="_blank" rel="noopener">詳しく見る</a>
-        </div>
-        <div class="kantei-upgrade-card kantei-upgrade-card--featured">
-          <div class="upgrade-plan-label">MATSU</div>
-          <div class="upgrade-plan-name">本気プラン</div>
-          <div class="upgrade-plan-price">¥15,000</div>
-          <div class="upgrade-plan-desc">複合展開15枚以上<br>転職タイミング最適化</div>
-          <a class="upgrade-plan-btn upgrade-plan-btn--gold" href="https://uranai.short.gy/NL0Rxn" target="_blank" rel="noopener">詳しく見る</a>
-        </div>
-      </div>
-    </div>
-    <div class="output-actions">
-      <button class="copy-btn" onclick="copyKantei()">テキストコピー</button>
-      <button class="reset-btn" onclick="resetUme()">作り直す</button>
-    </div>
-    <div class="copy-msg hidden" id="ume-copy-msg"></div>
-  </div>
-
-</div><!-- /flow-ume -->
-
-<div id="flow-lumnis" style="display:none">
-
-  <section>
-    <div class="label">① 生年月日</div>
-    <input type="text" class="lumnis-input" id="lumnis-date" maxlength="8" inputmode="numeric" placeholder="例: 19900315（8桁）" oninput="updateLumnisBtn()">
-  </section>
-
-  <section>
-    <button class="generate-btn" id="lumnis-gen-btn" onclick="generateLumnis()" disabled>運命数を計算して返信文を作る</button>
-  </section>
-
-  <div class="output-area" id="lumnis-output-area">
-    <div class="output-badge lumnis-badge">LUMNIS 返信文</div>
-    <div class="lumnis-destiny-num" id="lumnis-destiny-display">
-      <span id="lumnis-dest-num"></span>
-      <span class="lumnis-dest-sub" id="lumnis-dest-sub"></span>
-    </div>
-    <div class="lumnis-calc-steps" id="lumnis-calc-steps"></div>
-    <div class="output-text" id="lumnis-output-text"></div>
-    <div class="output-actions">
-      <button class="lumnis-action-btn" onclick="copyLumnis()">コピー</button>
-      <button class="reset-btn" onclick="resetLumnis()">作り直す</button>
-    </div>
-    <div class="copy-msg hidden" id="lumnis-copy-msg"></div>
-  </div>
-
-</div><!-- /flow-lumnis -->
 
 <!-- Settings Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="onOverlayClick(event)">
@@ -952,420 +347,480 @@
   </div>
 </div>
 
-<script src="config.js?v=3.7"></script>
 <script>
-const CARDS = [
-  {
-    id: 0, name: "愚者", category: "前進・出発系",
-    upright: {
-      meaning: "新しいスタートを切る時。転職への一歩を踏み出すエネルギーがある。",
-      reply: "カードは「愚者」でした。\n\n転職へのエネルギーが高まっている時期。\n迷いは当然ですが、今は動くタイミング。\n最初の一歩が、すべての始まりです。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "準備不足、衝動的な決断に注意。もう少し情報収集が必要。",
-      reply: "カードは「愚者（逆位置）」でした。\n\n今は少し立ち止まるべきタイミング。\n準備不足のまま動くと、後悔する可能性が高い。\nもう少し情報を集め、足元を固めてから。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 1, name: "魔術師", category: "力・実力系",
-    upright: {
-      meaning: "スキルと意志が揃っている。行動に移す準備が整った状態。",
-      reply: "カードは「魔術師」でした。\n\nスキルも意志も、すでに揃っている。\n足りないのは行動だけ。\n今こそ動き出すタイミングです。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "実力の見誤り。過信か過小評価かのどちらかが判断を歪めている。",
-      reply: "カードは「魔術師（逆位置）」でした。\n\n自分の実力を正確に把握できていない状態。\n過信でも過小評価でも、判断が歪む。\nまず冷静に、自分の棚卸しを。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 2, name: "女教皇", category: "内省・待機系",
-    upright: {
-      meaning: "直感が重要なサイン。内省と情報収集の時期。答えは内側にある。",
-      reply: "カードは「女教皇」でした。\n\n直感が正解に近い。\n今は焦って動くより、内側の声を聞く時期。\n答えはすでにあなたの中にあります。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "焦りが判断を歪めている。情報過多で混乱している状態。",
-      reply: "カードは「女教皇（逆位置）」でした。\n\n焦りが直感を曇らせている。\n情報過多で判断が迷子になっている状態。\n一度静かな時間を取って、整理を。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 3, name: "女帝", category: "その他",
-    upright: {
-      meaning: "自分の価値が高い時期。自信を持って交渉できる状態。",
-      reply: "カードは「女帝」でした。\n\n今は豊かな時期。自分の価値を低く見積もらないで。\nもっと強気に出ていい。\nあなたが思う以上の評価を、市場はしているかもしれません。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "自己評価が低い。または依存心が判断を鈍らせている。",
-      reply: "カードは「女帝（逆位置）」でした。\n\n自己評価が低く、本来の力を発揮できていない。\n依存や甘えが判断を鈍らせている可能性も。\n自立した視点で、もう一度現状を見直して。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 4, name: "皇帝", category: "その他",
-    upright: {
-      meaning: "計画的・戦略的な行動が実を結ぶ。権威や実績を活かす時期。",
-      reply: "カードは「皇帝」でした。\n\n計画と戦略で動く時。感情より論理を優先して。\n信頼できる実績や数字を武器に動けば、道は開ける。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "支配的な環境や固定観念に縛られている状態。",
-      reply: "カードは「皇帝（逆位置）」でした。\n\n支配的な環境や慣習に縛られている状態。\n「こうあるべき」という思い込みが自由を奪っている。\n自分のルールで動いていい。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 5, name: "法王", category: "その他",
-    upright: {
-      meaning: "伝統や正攻法が有効。人脈やメンターの活用が鍵になる。",
-      reply: "カードは「法王」でした。\n\n正攻法が効く局面。\n信頼できるメンターや人脈を活かすべき時。\n実績と信頼を積み上げてきた道を信じて。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "慣習への縛りが強い。新しいアプローチを試す必要がある。",
-      reply: "カードは「法王（逆位置）」でした。\n\n慣習や「普通はこうだ」という枠に縛られすぎ。\n今の方法が本当に自分に合っているか、問い直す時期。\n型を破ることも、正解のひとつです。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 6, name: "恋人", category: "その他",
-    upright: {
-      meaning: "価値観に基づく重要な選択の局面。心の声に従うことが大切。",
-      reply: "カードは「恋人」でした。\n\n重要な選択の局面。\n条件や待遇より、価値観が合うかどうかを軸に。\n心が動く方を、正直に選んでいい。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "職場との価値観の不一致。心の声と行動がズレている状態。",
-      reply: "カードは「恋人（逆位置）」でした。\n\n職場との価値観のズレが積み重なっている。\n「慣れ」と「合っている」は違う。\n今の環境が本当に自分に合っているか、冷静に見て。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 7, name: "戦車", category: "力・実力系",
-    upright: {
-      meaning: "強い意志と行動力で障害を乗り越えられる時期。",
-      reply: "カードは「戦車」でした。\n\n強い意志と推進力がある。\n迷っている場合ではない。今こそ前に進む時。\n動き続けることが、突破口になります。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "焦りと空回り。方向性が定まっていないまま動いている状態。",
-      reply: "カードは「戦車（逆位置）」でした。\n\n焦りが空回りしている状態。\nエネルギーはあるのに、方向がバラバラ。\n一度止まって、進む方向を定めてから動くこと。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 8, name: "力", category: "力・実力系",
-    upright: {
-      meaning: "忍耐と内面の強さが武器。粘り続けることが道を開く。",
-      reply: "カードは「力」でした。\n\n内側の強さが武器になる時期。\n焦らず、粘り続けることで道が開ける。\nすぐに結果が出なくても、あなたの力は本物です。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "心身の疲弊。無理を続けることによる消耗が限界に近い。",
-      reply: "カードは「力（逆位置）」でした。\n\n無理をし続けている。\n心身のサインを無視してはいけない。\n今の消耗が続けば、判断力そのものが落ちていく。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 9, name: "隠者", category: "内省・待機系",
-    upright: {
-      meaning: "内省と熟考の時期。焦らず自分の内側に答えを求めるべき。",
-      reply: "カードは「隠者」でした。\n\nひとりで深く考える時間が必要な時期。\n答えは外ではなく、内側にある。\n焦って動かなくていい。じっくり見極めて。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "孤立による視野の狭まり。他者の助けや外部情報が必要な状態。",
-      reply: "カードは「隠者（逆位置）」でした。\n\n孤立しすぎて視野が狭くなっている。\n一人で抱え込まず、信頼できる人に相談を。\n外の情報が、突破口になるかもしれません。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 10, name: "運命の輪", category: "転換・決断系",
-    upright: {
-      meaning: "転機の訪れ。好機を逃さず掴む準備が必要な時期。",
-      reply: "カードは「運命の輪」でした。\n\n転機の波が来ている。\nチャンスは逃したら終わり。今すぐ掴む準備を。\n流れに乗ることが、正解になる時期です。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "流れが向いていない。待機と準備に徹する時期。",
-      reply: "カードは「運命の輪（逆位置）」でした。\n\n今は流れが向いていない。\nタイミングが合わない中で無理に動いても消耗するだけ。\n準備を整えながら、次の波を待つのが賢明です。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 11, name: "正義", category: "その他",
-    upright: {
-      meaning: "論理的判断が正解を導く。事実を直視すれば道は明確になる。",
-      reply: "カードは「正義」でした。\n\n感情ではなく事実を見れば、答えは出る。\n論理的に整理すれば、進む道は明確になる。\n正しい判断をすれば、結果はついてきます。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "不当な評価や不公平な環境に置かれている状態。",
-      reply: "カードは「正義（逆位置）」でした。\n\n正当な評価を受けていない環境にいる。\nそのまま我慢し続ける必要はない。\n声を上げるか、場を変えるか。どちらも正解です。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 12, name: "吊られた男", category: "不安・迷い系",
-    upright: {
-      meaning: "視点の転換が新しい答えをもたらす。待機と観察が有効な局面。",
-      reply: "カードは「吊られた男」でした。\n\n今は動くより観察する時期。\n視点を変えると、今まで見えなかった答えが見えてくる。\n待つことも、立派な戦略です。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "決断の先延ばし。惰性で現状維持を続けている状態。",
-      reply: "カードは「吊られた男（逆位置）」でした。\n\n決断を先延ばしにし続けている。\n「考え中」を言い訳に、動かない理由を作っていませんか。\nいつまでも迷うのは、逃げているだけ。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 13, name: "死神", category: "その他",
-    upright: {
-      meaning: "変化の必然性。終わりが新しい始まりをもたらす時期。",
-      reply: "カードは「死神」でした。\n\n手放す時が来た。\n終わりを恐れないで。本当の変化はここから始まる。\n今の状況を手放すことが、次の扉を開く鍵です。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "変化への恐怖による現状維持。しがみつくことで消耗が続く状態。",
-      reply: "カードは「死神（逆位置）」でした。\n\n変化を恐れてしがみついている。\nしかし、しがみつくほど消耗していく。\n手放す勇気が、実は一番の近道です。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 14, name: "節制", category: "内省・待機系",
-    upright: {
-      meaning: "バランスと調和が重要。長期的視点で着実に進む時期。",
-      reply: "カードは「節制」でした。\n\nバランスが大事な時期。\n焦りを手放して、着実に積み上げていく。\n長期目線で動けば、結果は必ずついてきます。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "極端な行動や感情的な判断が裏目に出やすい状態。",
-      reply: "カードは「節制（逆位置）」でした。\n\n極端な判断が出やすい状態。\n焦りや感情で動くと、後悔する可能性が高い。\n一度冷静になって、整理してから動いて。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 15, name: "悪魔", category: "不安・迷い系",
-    upright: {
-      meaning: "執着や依存を自覚する必要がある。縛りに気づくことが第一歩。",
-      reply: "カードは「悪魔」でした。\n\n何かに縛られていることに、自覚が必要。\n安定、給与、人間関係——何への執着が足を引っ張っているか。\nそれを手放せるかどうかが、分岐点です。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "束縛から解放される準備ができている。変化への意志が芽生えている。",
-      reply: "カードは「悪魔（逆位置）」でした。\n\n鎖を断ち切る準備が整い始めている。\n動く勇気が出てきている証拠。\n今がその一歩を踏み出すタイミングです。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 16, name: "塔", category: "転換・決断系",
-    upright: {
-      meaning: "急激な変化や崩壊。必然的な変革が起きる時期。",
-      reply: "カードは「塔」でした。\n\n突然の変化が起きる、または今まさに起きている。\n崩れることは、不要なものが取り除かれること。\n破壊の後に、本物の再建が始まります。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "変化の先送り。自分から動かないと強制的に変わる日が来る。",
-      reply: "カードは「塔（逆位置）」でした。\n\n変化を先送りにして、現状を維持しようとしている。\nしかし、崩れるものは必ず崩れる。\n自分から動いた方が、ダメージは少ない。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 17, name: "星", category: "前進・出発系",
-    upright: {
-      meaning: "希望と可能性がある。正しい方向に進んでいることを示す。",
-      reply: "カードは「星」でした。\n\n希望がある。信じて進んでいい。\n今の方向性は間違っていない。\n焦らず、自分のペースで着実に歩んでいけば、道は開けます。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "希望の喪失や燃え尽き。まず休息が必要な状態。",
-      reply: "カードは「星（逆位置）」でした。\n\n疲弊して、希望を見失いかけている。\nそれは当然の反応。無理に前向きになる必要はない。\nまず休んで、それから前を向いて。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 18, name: "月", category: "不安・迷い系",
-    upright: {
-      meaning: "不安と迷いの時期。感情が判断を歪めている可能性がある。",
-      reply: "カードは「月」でした。\n\n不安や迷いが強い時期。\n今の判断は、感情に歪んでいる可能性がある。\n焦らず、感情の波が落ち着くのを待ってから決断を。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "思い込みや錯覚からの解放が必要。現実を客観的に見ることが大切。",
-      reply: "カードは「月（逆位置）」でした。\n\n思い込みや不安が、現実を歪めて見せている。\n事実と感情を切り分けて、冷静に情報を整理して。\n霧が晴れれば、答えは見えてきます。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 19, name: "太陽", category: "前進・出発系",
-    upright: {
-      meaning: "活力と自信に満ちた時期。積極的な行動が実を結ぶ。",
-      reply: "カードは「太陽」でした。\n\n自信を持って動いていい時期。\n明るく前向きなエネルギーが、周囲を動かす力になる。\n迷わず、堂々と。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "楽観的すぎる状態。現実から目を背けている可能性がある。",
-      reply: "カードは「太陽（逆位置）」でした。\n\n少し楽観的すぎる部分がある。\n根拠のない自信は、足元を掬われる原因になる。\n現実をしっかり直視した上で、動くこと。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 20, name: "審判", category: "転換・決断系",
-    upright: {
-      meaning: "大きな転換点。過去を清算し新たなステージへ進む時。",
-      reply: "カードは「審判」でした。\n\n大きな転換点。\n過去の経験はすべて、次のステージへの糧になっている。\n清算して、新しい自分で出直す時が来ました。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "過去への囚われ。自己批判が強く前進を妨げている状態。",
-      reply: "カードは「審判（逆位置）」でした。\n\n過去の失敗や後悔にとらわれている。\n自分を裁きすぎ。\n前に進む許可を、自分自身に出してあげて。\n\n甘い言葉より、本当の答えを。🖤"
-    }
-  },
-  {
-    id: 21, name: "世界", category: "前進・出発系",
-    upright: {
-      meaning: "完成と達成。次のステージへの移行準備が整っている。",
-      reply: "カードは「世界」でした。\n\n準備が整っている。\n次のステージへ踏み出す時が来た。\nここまで積み上げてきたものが、すべて力になっています。\n\n甘い言葉より、本当の答えを。🖤"
-    },
-    reversed: {
-      meaning: "未完成の部分がある。最後の仕上げに集中する必要がある時期。",
-      reply: "カードは「世界（逆位置）」でした。\n\nゴールまで、あと一歩足りない部分がある。\n焦って動くより、仕上げに集中する時期。\nもうひと踏ん張りで、道は開けます。\n\n甘い言葉より、本当の答えを。🖤"
-    }
+const CONFIG = {
+  VERSION: '1.0.0',
+  GEMINI_MODEL: 'gemini-flash-latest',
+  URLS: {
+    TO_MAIN: '【本鑑定URL（出品後に差し替え）】',
+    TO_DEEP: '【深掘りURL（出品後に差し替え）】'
   }
+};
+
+const BANNED_WORDS = ['絶対', '必ず', '100%', '確実'];
+
+const PLANS = {
+  free: { key: 'free', label: '無料LINE相談', price: '無料', target: 300, approx: true },
+  lite: { key: 'lite', label: 'お試し', price: '¥500', target: 500 },
+  main: { key: 'main', label: '本鑑定', price: '¥3,000', target: 1800 },
+  deep: { key: 'deep', label: '深掘り', price: '¥5,000', target: 3500 }
+};
+
+// ── 大アルカナ22枚（正逆・関係性文脈の汎用解釈） ──
+const CARDS = [
+  { id: 0, name: '愚者', upright: '新しい一歩を踏み出す軽やかなエネルギー。まだ形になっていなくても、気持ちが動き出しているサインです。', reversed: '勢いだけで動くと空回りしやすい時期。もう少し状況を見極めてからでも遅くありません。' },
+  { id: 1, name: '魔術師', upright: '気持ちも状況も、動き出す準備が整いつつある時期。行動に移すことで流れが変わりやすいサインです。', reversed: '気持ちと行動がちぐはぐになりやすい時期。焦らず、今できることから整理していく方が良さそうです。' },
+  { id: 2, name: '女教皇', upright: '言葉より、直感や静かな気配で伝わるものが多い時期。焦らず内側の声に耳を傾けたいところです。', reversed: '情報や噂に振り回されて、気持ちが定まりにくい状態。一度距離を置いて心を静めることが助けになりそうです。' },
+  { id: 3, name: '女帝', upright: '自分の魅力や価値を素直に受け止めていい時期。無理に取り繕わなくても、あるがままで十分伝わります。', reversed: '自分を後回しにしすぎて、心が満たされにくい状態。まずは自分を大切にすることから始めたいところです。' },
+  { id: 4, name: '皇帝', upright: '感情に流されず、落ち着いて状況を見極める力が求められる時期。冷静さが道を開く鍵になりそうです。', reversed: '「こうあるべき」という思い込みが、心を窮屈にしている可能性があります。少し力を抜いてもいいのかもしれません。' },
+  { id: 5, name: '法王', upright: 'これまでのやり方や周囲の助言が、意外と的を射ている時期。信頼できる声に耳を傾けてみてください。', reversed: '常識や世間体にとらわれすぎて、本当の気持ちが見えにくくなっている状態です。' },
+  { id: 6, name: '恋人', upright: '心が強く動く選択の時期。損得よりも、気持ちが向く方向を大切にしていいサインです。', reversed: '気持ちと行動がすれ違い、迷いが生まれやすい時期。無理に結論を急がなくても大丈夫です。' },
+  { id: 7, name: '戦車', upright: '前に進む意志が強まっている時期。迷いを抱えながらも、動き出す力は十分にあります。', reversed: '気持ちばかりが先走り、空回りしやすい状態。一度立ち止まって方向を定めることが助けになりそうです。' },
+  { id: 8, name: '力', upright: '静かな忍耐と優しさが、状況を良い方向に導く時期。すぐに結果が出なくても、その力は本物です。', reversed: '我慢や無理を重ねて、心が疲れやすい状態。少し肩の力を抜いてもいい時期かもしれません。' },
+  { id: 9, name: '隠者', upright: 'ひとりで気持ちを整理する時間が必要な時期。焦らず、静かに内側と向き合うことが助けになります。', reversed: '一人で抱え込みすぎて、視野が狭くなっている状態。信頼できる誰かに話してみるのも良さそうです。' },
+  { id: 10, name: '運命の輪', upright: '状況が動き出す転機が近づいている時期。流れが変わるサインを見逃さないようにしたいところです。', reversed: 'タイミングがまだ合わない時期。無理に動かず、流れが整うのを待つ方が良さそうです。' },
+  { id: 11, name: '正義', upright: '感情ではなく事実を見つめることで、気持ちが整理されやすい時期。冷静な視点が助けになります。', reversed: '公平とは言えない状況に置かれている可能性。無理に我慢を続ける必要はありません。' },
+  { id: 12, name: '吊られた男', upright: '今はあえて動かず、状況を見守る時期。視点を変えることで新しい気づきが得られそうです。', reversed: '決断を先延ばしにしている状態が続いています。いつまでも今のままではいられない、というサインでもあります。' },
+  { id: 13, name: '死神', upright: 'ひとつの区切りを迎える時期。終わりは同時に、新しい始まりの合図でもあります。', reversed: '変化を恐れて、現状にしがみついている状態。手放すことが、実は次への近道かもしれません。' },
+  { id: 14, name: '節制', upright: '焦らずバランスを取りながら進むことで、心が落ち着いていく時期です。', reversed: '感情の振れ幅が大きくなりやすい時期。一度冷静になる時間を取ることをおすすめします。' },
+  { id: 15, name: '悪魔', upright: '執着や依存に、少しずつ気づき始めている時期。自覚することがまず第一歩です。', reversed: '縛られていた状況から、少しずつ抜け出す力が芽生え始めているサインです。' },
+  { id: 16, name: '塔', upright: '予期せぬ変化が起きやすい時期。崩れることで、かえって本当に必要なものが見えてきます。', reversed: '変化を先延ばしにしている状態。自分から動いた方が、負担は少なく済みそうです。' },
+  { id: 17, name: '星', upright: '静かな希望が見え始める時期。今の方向性を信じて、自分のペースで進んでいいサインです。', reversed: '疲れや落胆から、希望を見失いかけている状態。まずは休むことを優先してください。' },
+  { id: 18, name: '月', upright: '不安や迷いが強くなりやすい時期。感情に判断を委ねすぎず、少し時間を置くことが助けになります。', reversed: '思い込みや不安が現実を歪めて見せている可能性。事実と感情を切り分けて整理してみてください。' },
+  { id: 19, name: '太陽', upright: '気持ちが明るく前向きになっていく時期。素直な気持ちを表すことが、良い流れにつながります。', reversed: '楽観的になりすぎて、現実を見落としている部分があるかもしれません。' },
+  { id: 20, name: '審判', upright: 'これまでの経験が、次のステージへの糧になる時期。過去を清算し、新しく歩み出せそうです。', reversed: '過去の後悔や失敗にとらわれている状態。自分を許すことが、前進のきっかけになります。' },
+  { id: 21, name: '世界', upright: 'ひとつの区切りと達成を迎える時期。ここまで積み重ねてきたものが、力になっています。', reversed: 'あと少し仕上げが必要な時期。焦らず、丁寧に締めくくることを意識してみてください。' }
 ];
 
+// ── 栞奈: 運の詰まりポイント診断（カード無し） ──
+const SHIORI_THEMES = [
+  { name: '人間関係の消耗', cause: '人に気を遣いすぎて、知らないうちにエネルギーが漏れていることが詰まりの原因のようです。', flow: '我慢が積み重なって、心のコップが満杯に近づいている流れが続いています。', advice: '今日は、返信や誘いをひとつだけ断ってみてください。それだけで十分です。' },
+  { name: '住環境の乱れ', cause: '玄関や水回りなど、住まいの巡りが滞っていることが運気の重さにつながっているようです。', flow: '片づけようと思いながら、後回しになっている流れが続いています。', advice: '今日は、玄関のたたきを拭くことだけをやってみてください。' },
+  { name: '過去への執着', cause: '終わったことや言われた言葉を、心の中で繰り返し再生してしまっていることが詰まりの原因のようです。', flow: '気持ちが過去に引っ張られて、今に集中しにくい流れが続いています。', advice: '今日は、そのことを紙に書き出して、そのまま閉じてみてください。' },
+  { name: '生活リズムの乱れ', cause: '睡眠や食事のリズムが崩れて、気持ちの余裕が減っていることが詰まりの原因のようです。', flow: '心と体が休まらないまま、判断力が鈍りやすい流れになっています。', advice: '今日は、いつもより30分早く布団に入ってみてください。' },
+  { name: '言葉の乱れ', cause: '自分や周りに対して、きつい言葉・投げやりな言葉が増えていることが詰まりの原因のようです。', flow: '言葉が荒れると、運気も一緒に荒れやすい流れになっています。', advice: '今日は、独り言でいいので「ありがとう」を3回言ってみてください。' },
+  { name: '比較疲れ', cause: '他人と比べて落ち込む時間が増えていることが、運気を重くしている一因のようです。', flow: '比べるほど、自分の輪郭が薄くなっていく流れに入っています。', advice: '今日だけは、SNSを開く回数をひとつ減らしてみてください。' },
+  { name: '金運の滞り', cause: 'お金の出入りに漠然とした不安を抱えたまま、向き合わずにいることが詰まりの原因のようです。', flow: '不安に蓋をしている分だけ、流れが重くなっているようです。', advice: '今日は、財布の中のレシートを一枚だけ整理してみてください。' },
+  { name: '感謝の目減り', cause: '「当たり前」が増えて、感謝を言葉にする機会が減っていることが詰まりの原因のようです。', flow: '小さな有り難さに気づきにくくなっている流れが続いています。', advice: '今日は、誰か一人に「ありがとう」を伝えてみてください。' }
+];
+
+const SHIORI_AREA_TEXT = {
+  '住まいの運気': '玄関や水回りなど、暮らしの入り口にあたる場所の巡りが、運気の重さに直結しているようです。',
+  '日々の習慣': '何気なく続けている小さな習慣が、知らないうちに運の流れを重くしている場合があります。',
+  '人間関係': '気を遣いすぎる関係、我慢を重ねている関係が、エネルギーの漏れにつながっているようです。',
+  '仕事・対人運': '職場や対人関係での小さなすれ違いが積み重なり、流れを滞らせている可能性があります。',
+  '全体の流れ': 'ここまでの4つを合わせて見ると、今は無理をため込みやすい時期に入っているようです。'
+};
+
+// ── アカウント定義 ──
+const ACCOUNTS = {
+  kotoha: {
+    key: 'kotoha', name: 'ことは', sub: '復縁とタイミングのタロット', theme: 'theme-kotoha',
+    usesCards: true,
+    itemLabels: {
+      free: ['お相手の気持ちと今の流れ'],
+      lite: ['お相手の気持ちと今の流れ'],
+      main: ['お相手の今の気持ち', '二人の現在の流れ', 'これからの向き合い方'],
+      deep: ['彼の現在の気持ち', '別れに至った流れ', '復縁の可能性・時期の傾向', 'あなたが動くタイミング', '今からの過ごし方']
+    },
+    deepExtraLabel: '30日間の整え方カレンダー（要点）',
+    deepExtraText: '最初の10日は気持ちを落ち着けることを優先し、次の10日はお相手との距離感を焦らず保ち、最後の10日は自分自身の時間を大切にしてみてください。',
+    openings: ['{quote}とのこと。いま一番つらい時間を過ごしているんだね。', '答えの出ない毎日を過ごしているとのこと、しんどかったよね。'],
+    empathyLine: 'そう感じてしまうのは、あなたが悪いわけじゃないよ。',
+    summary: '{quote}という点から、こう読み解きました。',
+    closings: [
+      'この鑑定はここで終わりだよ🤍 延長のご案内はしないから安心してね。',
+      '信じるかどうかは、ゆっくり考えて決めてくれて大丈夫🤍',
+      '不安になることがあれば、いつでもここで区切って大丈夫だからね🤍'
+    ],
+    upsell: {
+      complete: '今回いただいたご相談内容については、この鑑定で完結だよ🤍',
+      toMain: 'もし他にも気になることが出てきたら、3つの視点でじっくり読み解く本鑑定（¥3,000）もあるから、よかったら覗いてみてね。\n▶ 本鑑定はこちら：{URL}',
+      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目でまるごと読み解く深掘り鑑定（¥5,000）もあるから、気になったらチェックしてみてね。\n▶ 深掘りはこちら：{URL}',
+      final: 'また気持ちが揺れたときは、この鑑定文をお守り代わりに読み返してね🤍'
+    },
+    aiPersona: 'あなたは「ことは」という復縁専門のタロット占い師です。一人称は「わたし」。読み手には親友にLINEするようなやわらかい口語（敬体とタメ口のミックス）で語りかけてください。絵文字は🤍を1通1個までに抑えてください。'
+  },
+  kuroi: {
+    key: 'kuroi', name: '黒烏', sub: '言えない恋のタロット', theme: 'theme-kuroi',
+    usesCards: true,
+    secretLine: 'このやりとりが外に出ることはありません。',
+    itemLabels: {
+      free: ['お相手の気持ちと今の流れ'],
+      lite: ['お相手の気持ちと今の流れ'],
+      main: ['お相手の本音', 'この関係の現在地', 'あなたの心の整理'],
+      deep: ['お相手の現在の気持ち', 'これまでの流れ', '今後の傾向', 'あなた自身の気持ちの整理', '心の整え方']
+    },
+    deepExtraLabel: '心の整え方30日',
+    deepExtraText: '最初の10日は気持ちを書き出して整理し、次の10日は自分だけの時間を意識的に作り、最後の10日は誰かに話せる小さな一歩を探してみてください。',
+    openings: ['「{quote}」とのこと。その言葉、黒烏はきちんと受け取りました。'],
+    empathyLine: 'その苦しさは、あなたが悪いからではありません。',
+    summary: '{quote}という点から、こう読み解きました。',
+    closings: [
+      'この鑑定はここで終わります🪶 延長の案内はしません。',
+      '信じるかどうかは、あなたのペースで決めてください。',
+      '不安になることがあれば、いつでもここで区切って大丈夫です。'
+    ],
+    upsell: {
+      complete: '今回いただいたご相談内容については、この鑑定で完結とさせていただきます。',
+      toMain: 'もし他にも気になることが出てきたら、3つの視点でじっくり読み解く本鑑定（¥3,000）もございます。よろしければご覧ください。\n▶ 本鑑定はこちら：{URL}',
+      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目で読み解く深掘り鑑定（¥5,000）もございます。\n▶ 深掘りはこちら：{URL}',
+      final: 'また心が揺れる夜があれば、この鑑定文をそっと読み返してください🪶'
+    },
+    aiPersona: 'あなたは「黒烏」という、言えない恋（不倫・複雑愛）専門のタロット占い師です。読み手のことは「あなた」と呼び、一人称は最小限にし、使うときだけ「黒烏は」としてください。静かで丁寧、断定的だが裁かない口調。絵文字は🪶🌙🖤を控えめに（1通1個目安）。引用の強調は全角「」のみ使ってください。'
+  },
+  shiori: {
+    key: 'shiori', name: '栞奈', sub: 'お清めと開運習慣', theme: 'theme-shiori',
+    usesCards: false,
+    itemLabels: {
+      free: ['運の詰まりポイント'],
+      lite: ['運の詰まりポイント'],
+      main: ['詰まりの原因', '今の流れ', '今日からの整え方'],
+      deep: ['住まいの運気', '日々の習慣', '人間関係', '仕事・対人運', '全体の流れ']
+    },
+    deepExtraLabel: '30日間の整え方カレンダー（要点）',
+    deepExtraText: '最初の10日は住まいと生活リズムを整えることを、次の10日は言葉づかいと人間関係の整理を、最後の10日は感謝を言葉にする習慣を意識してみてください。',
+    openings: ['{quote}とのこと。それはしんどいよね。よく話してくれたね。'],
+    empathyLine: 'それは、あなたのせいで起きていることじゃないよ。',
+    summary: '{quote}という点から、こう読み解いたよ。',
+    closings: [
+      '今日の鑑定はここまで🕊️ 無理に何かを続けなくて大丈夫だからね。',
+      '信じるかどうかはあなた次第。ゆっくりでいいよ。',
+      '次のご相談は、あなたが必要だと感じたときだけで十分だよ🕊️'
+    ],
+    upsell: {
+      complete: '今回いただいたご相談内容については、この鑑定で完結です。',
+      toMain: 'もし他にも気になることが出てきたら、3項目でじっくり読み解く本鑑定（¥3,000）もあります。よかったら見てみてね。\n▶ 本鑑定はこちら：{URL}',
+      toDeep: 'もっと具体的に整えたいことが出てきたら、5項目で読み解く深掘り鑑定（¥5,000）もあります。\n▶ 深掘りはこちら：{URL}',
+      final: 'また整えたいことが出てきたら、この鑑定文をお守り代わりに読み返してね🕊️'
+    },
+    aiPersona: 'あなたは「栞奈」という、お清め・開運習慣専門の鑑定士です。タロットカードは使わず、相談文から運の滞りを読み解いてください。疲れを知る元OLの姉御肌のような、責めずやさしく言い切る口調。絵文字は🕊️🧂を最小限に。祈祷や開運グッズ・高額な物品販売への誘導は一切行わないでください。'
+  }
+};
+
 // ── State ──
-let selectedCard = null;
-let position = 'upright';
-let mode = 'template';
+const state = {
+  account: 'kotoha',
+  plan: 'free',
+  mode: 'template',
+  cards: null,
+  theme: null,
+  coreText: ''
+};
 
-// ── Init ──
-function renderCards() {
-  const grid = document.getElementById('card-grid');
-  grid.innerHTML = CARDS.map(card => `
-    <div class="card-item" id="card-${card.id}" onclick="selectCard(${card.id})">
-      <span class="card-num">${card.id}</span>
-      <span class="card-name">${card.name}</span>
-    </div>
-  `).join('');
+// ── Utility ──
+function extractQuote(text) {
+  if (!text) return '今回のご相談';
+  const clean = text.replace(/\s+/g, ' ').trim();
+  const parts = clean.split(/[。！？\n]/).filter(Boolean);
+  let q = parts[0] || clean;
+  if (q.length > 40) q = q.slice(0, 40) + '…';
+  return q || '今回のご相談';
 }
 
-function selectCard(id) {
-  if (selectedCard !== null) document.getElementById(`card-${selectedCard}`).classList.remove('selected');
-  selectedCard = id;
-  document.getElementById(`card-${id}`).classList.add('selected');
-  document.getElementById(`card-${id}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  updateGenerateBtn();
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function drawCards(n) {
+  const ids = Array.from({ length: 22 }, (_, i) => i);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  return ids.slice(0, n).map(id => ({ id, pos: Math.random() < 0.5 ? 'upright' : 'reversed' }));
 }
 
-function setPosition(pos) {
-  position = pos;
-  document.getElementById('btn-upright').classList.toggle('selected', pos === 'upright');
-  document.getElementById('btn-reversed').classList.toggle('selected', pos === 'reversed');
+function pickShioriTheme(text) {
+  let h = 0;
+  for (let i = 0; i < text.length; i++) { h = (h * 31 + text.charCodeAt(i)) >>> 0; }
+  if (text.length === 0) h = Math.floor(Math.random() * 1000);
+  return SHIORI_THEMES[h % SHIORI_THEMES.length];
+}
+
+function cardMeaning(card, pos) { return pos === 'upright' ? card.upright : card.reversed; }
+
+// ── Account / Plan switching ──
+function setAccount(key) {
+  state.account = key;
+  document.querySelectorAll('.account-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('acc-' + key).classList.add('selected');
+  document.getElementById('body').className = ACCOUNTS[key].theme;
+  updateItemsPreview();
+  hideOutput();
+}
+
+function setPlan(key) {
+  state.plan = key;
+  document.querySelectorAll('.plan-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('plan-' + key).classList.add('selected');
+  updateItemsPreview();
+  hideOutput();
 }
 
 function setMode(m) {
-  mode = m;
+  state.mode = m;
   document.getElementById('mode-template').classList.toggle('selected', m === 'template');
   document.getElementById('mode-ai').classList.toggle('selected', m === 'ai');
-  updateGenerateBtn();
-  const warn = document.getElementById('no-key-warn');
-  warn.style.display = (m === 'ai' && !getApiKey()) ? 'block' : 'none';
+  document.getElementById('no-key-warn').style.display = (m === 'ai' && !getApiKey()) ? 'block' : 'none';
+}
+
+function updateItemsPreview() {
+  const acc = ACCOUNTS[state.account];
+  const labels = acc.itemLabels[state.plan];
+  const nums = ['①', '②', '③', '④', '⑤'];
+  let text = labels.map((l, i) => (labels.length > 1 ? nums[i] + ' ' + l : l)).join('　');
+  if (state.plan === 'deep') text += '　' + acc.deepExtraLabel;
+  else if (state.plan === 'main') text += acc.usesCards ? '　道すじのまとめ' : '　30日の整え方指針';
+  document.getElementById('items-preview').textContent = '鑑定項目: ' + text;
 }
 
 function updateGenerateBtn() {
-  const btn = document.getElementById('generate-btn');
-  btn.disabled = selectedCard === null;
+  const text = document.getElementById('consult-text').value.trim();
+  document.getElementById('generate-btn').disabled = text.length === 0;
+}
+
+function hideOutput() {
+  document.getElementById('output-area').classList.remove('visible');
+}
+
+// ── Template mode ──
+function shioriItemText(theme, index, total) {
+  if (total === 1) return theme.cause + theme.flow;
+  if (index === 0) return theme.cause;
+  if (index === 1) return theme.flow;
+  return theme.advice;
+}
+
+function generateTemplateCore(acc, planKey, consult, cards, theme) {
+  const quote = extractQuote(consult);
+  const labels = acc.itemLabels[planKey];
+  const lines = [];
+  if (acc.secretLine) { lines.push(acc.secretLine); lines.push(''); }
+  lines.push(pick(acc.openings).replace('{quote}', quote));
+  lines.push(acc.empathyLine);
+  lines.push('');
+  labels.forEach((label, i) => {
+    if (acc.usesCards) {
+      const c = cards[i];
+      const card = CARDS[c.id];
+      const posLabel = c.pos === 'upright' ? '正位置' : '逆位置';
+      lines.push('■ ' + label + '｜カード: ' + card.name + '（' + posLabel + '）');
+      lines.push(cardMeaning(card, c.pos));
+    } else {
+      lines.push('■ ' + label);
+      if (planKey === 'deep') {
+        lines.push(SHIORI_AREA_TEXT[label]);
+      } else {
+        lines.push(shioriItemText(theme, i, labels.length));
+      }
+    }
+    lines.push('');
+  });
+  if (planKey === 'deep') {
+    lines.push('■ ' + acc.deepExtraLabel);
+    lines.push(acc.deepExtraText);
+    lines.push('');
+  } else if (planKey === 'main') {
+    if (acc.usesCards) {
+      lines.push('■ 道すじのまとめ');
+      lines.push('3枚をつなげて視ると、いまは流れが止まっているのではなく、切り替わる途中にあると読み取れます。焦って結論を出すより、まずご自身の心を整えることが、次の一歩を自然にしてくれる流れです。');
+    } else {
+      lines.push('■ 30日の整え方指針');
+      lines.push(acc.deepExtraText);
+    }
+    lines.push('');
+  }
+  lines.push(acc.summary.replace('{quote}', quote));
+  lines.push('');
+  lines.push(pick(acc.closings));
+  return lines.join('\n');
+}
+
+// ── AI mode ──
+function buildAIPrompt(acc, planKey, consult, cards, theme) {
+  const plan = PLANS[planKey];
+  const labels = acc.itemLabels[planKey];
+  let itemsDesc;
+  if (acc.usesCards) {
+    itemsDesc = labels.map((label, i) => {
+      const c = cards[i]; const card = CARDS[c.id]; const posLabel = c.pos === 'upright' ? '正位置' : '逆位置';
+      return (i + 1) + '. 「' + label + '」→ カード: ' + card.name + '（' + posLabel + '） 基本の意味: ' + cardMeaning(card, c.pos);
+    }).join('\n');
+  } else if (planKey === 'deep') {
+    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」→ 参考: ' + SHIORI_AREA_TEXT[label]).join('\n');
+  } else if (labels.length === 1) {
+    itemsDesc = '1. 「' + labels[0] + '」→ 相談文全体から運の詰まりポイントをひとつ診断し、その原因と今の流れを書いてください。（参考候補: ' + SHIORI_THEMES.map(t => t.name).join('／') + ' などから近いものを選んでも、独自の診断でも構いません）';
+  } else {
+    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」').join('\n') + '\n※相談文全体から運の詰まりポイントをひとつ診断し、①原因→②今の流れ→③今日からの整え方の順で展開してください。';
+  }
+
+  const targetLine = plan.approx ? ('目安は' + plan.target + '字程度です。') : (plan.target + '字以上を目指してください。');
+
+  let rules = acc.key === 'kuroi'
+    ? '・略奪成就を断定しない。お相手のご家族への言及、不幸を願う表現はしない。「バレる」等の恐怖を煽る表現も使わない\n・冒頭に必ず秘密厳守の一文を入れること（例:「このやりとりが外に出ることはありません。」）'
+    : (acc.key === 'shiori' ? '・祈祷・お祓い・開運グッズ等の物品販売や購入への誘導は一切しない。科学的根拠を偽装する表現（脳科学で証明 等）も使わない' : '');
+
+  const headingBlocks = labels.map(l => '■ ' + l + (acc.usesCards ? '｜カード: (該当カードと正逆位置を明記)' : '') + '\n（読み解き）').join('\n\n');
+  let deepExtra = '';
+  if (planKey === 'deep') deepExtra = '\n\n■ ' + acc.deepExtraLabel + '\n（30日間の指針）';
+  else if (planKey === 'main') deepExtra = acc.usesCards
+    ? '\n\n■ 道すじのまとめ\n（3問の答えを重ねて、全体の流れと「ここからどう進んでいくか」を4〜6行でつなげて書く。新しい断定はしない）'
+    : '\n\n■ 30日の整え方指針\n（お金のかからない、30日間続けられる整え方の指針を3〜4行で）';
+
+  return acc.aiPersona + '\n\n' +
+'【絶対に守るルール】\n' +
+'・未来を断定しない。「絶対」「必ず」「100%」「確実」は使用禁止。「〜の流れがあります」「〜しやすい時期です」「〜可能性が高いです」等の言い回しを使うこと\n' +
+'・煽らない・脅さない・引き止めない。不安を煽る表現や期限を焦らせる表現は使わない\n' +
+'・医療・法律・投資の助言はしない。深刻な内容（自傷・多額の負債・脅迫等）が含まれる場合は、鑑定を続ける前に専門窓口への相談を案内して締めること\n' +
+(rules ? rules + '\n' : '') +
+'\n【相談文】\n' + consult + '\n\n' +
+'【今回の鑑定内容】\n' + itemsDesc + '\n\n' +
+'【出力フォーマット】\n' + targetLine + '\n' +
+'以下の構成・見出し表記で出力してください（■を使った見出し、項目の前後に空行）。誘導文・アップセルの案内は絶対に書かないでください（こちらで別途付与します）。\n\n' +
+'（冒頭2〜4行: 相談文の固有の状況や言葉を引用しながらの共感・受け止め）\n\n' +
+headingBlocks + deepExtra + '\n\n' +
+'（最後に: 上記の理由の要約 一文＋安心の一文で締める。安心の一文の例:「この鑑定はここで終わりです」「信じるかどうかはあなた次第です」等のニュアンスを、あなたの口調で）';
+}
+
+async function callGemini(prompt) {
+  const apiKey = getApiKey();
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + CONFIG.GEMINI_MODEL + ':generateContent?key=' + apiKey;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 4096, temperature: 0.8 },
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+      ]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err.error && err.error.message) || ('HTTP ' + res.status));
+  }
+  const data = await res.json();
+  const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+  return parts.map(p => p.text || '').join('');
+}
+
+function buildContinuePrompt() {
+  const acc = ACCOUNTS[state.account];
+  const plan = PLANS[state.plan];
+  const consult = document.getElementById('consult-text').value.trim();
+  return acc.aiPersona + '\n\n' +
+    '以下はここまで書いた鑑定文です。まだ目標文字数（' + plan.target + '字以上）に届いていません。同じトーン・構成を保ったまま、内容を薄めず具体性を足す形で、追加の段落を書いてください。見出しの重複や「以上です」等の締めの繰り返しは避け、自然につながる追加本文のみを出力してください。\n\n' +
+    '【相談文】\n' + consult + '\n\n【ここまでの鑑定文】\n' + state.coreText;
 }
 
 // ── Generate ──
 async function generate() {
-  if (selectedCard === null) return;
-  if (mode === 'ai') {
-    await generateAI();
-  } else {
-    generateTemplate();
+  const consult = document.getElementById('consult-text').value.trim();
+  if (!consult) { alert('相談文を入力してください'); return; }
+  const acc = ACCOUNTS[state.account];
+  const planKey = state.plan;
+  const labels = acc.itemLabels[planKey];
+
+  let cards = null, theme = null;
+  if (acc.usesCards) {
+    cards = drawCards(labels.length);
+    state.cards = cards;
+  } else if (planKey !== 'deep') {
+    theme = pickShioriTheme(consult);
+    state.theme = theme;
   }
-}
-
-function generateTemplate() {
-  const card = CARDS[selectedCard];
-  const text = card[position].reply;
-  showOutput(text, 'テンプレート');
-}
-
-async function generateAI() {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    openSettings();
-    return;
-  }
-
-  const card = CARDS[selectedCard];
-  const question = document.getElementById('question').value.trim();
-  const posLabel = position === 'upright' ? '正位置' : '逆位置';
-  const meaning = card[position].meaning;
-
-  const userMessage = `あなたは「黒烏タロット」という転職専門の占い師です。
-口調: 丁寧だが率直、辛口リアル系。一文は短く（体言止め可）、絵文字は使わない。
-
-以下の情報をもとに、LINEへの返信文（本文のみ）を書いてください。締めの言葉は不要です。
-
-【相談者の質問】
-${question || '（質問未入力）'}
-
-【引いたカード】
-${card.name}（${posLabel}）
-
-【カードの基本解釈（転職文脈）】
-${meaning}
-
-【必須構成】番号や見出しは出力せず、以下の3つの内容を書くこと。各ブロックの間には必ず空行を1行入れること：
-
-【現状】カードが示す今の状態を具体的に描写する
-・抽象的な解釈で終わらせない
-・「どういう行動・感情の状態にいるか」を具体的に描写する
-・読んだ人が「私のことを見ている」と感じるくらい具体的に
-
-【核心】相談内容に対して逃げずに答える
-・「〜かもしれない」は使わず断言する
-・今すべきこと／やめるべきことを1つに絞って伝える
-・辛口でも、相手のためになる言葉を選ぶ
-
-【余白】希望を示しつつ、道筋だけを残して締める
-・相談者には可能性・素地があることを肯定的に伝える
-・ただし「そこに至る具体的な道筋は今回の鑑定では見えない」と正直に添える
-・感情的な言葉は使わず、前向きかつ静かなトーンで締める`;
 
   const btn = document.getElementById('generate-btn');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = '生成中...';
+  btn.disabled = true; btn.classList.add('loading'); btn.textContent = '生成中...';
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: userMessage }] }],
-        generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-        ]
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    let core;
+    if (state.mode === 'ai') {
+      const apiKey = getApiKey();
+      if (!apiKey) { openSettings(); return; }
+      core = await callGemini(buildAIPrompt(acc, planKey, consult, cards, theme));
+    } else {
+      core = generateTemplateCore(acc, planKey, consult, cards, theme);
     }
-
-    const data = await res.json();
-    const parts = data.candidates?.[0]?.content?.parts || [];
-    const body = parts.map(p => p.text || '').join('');
-    const text = body.trim() + '\n\n' + CONFIG.CLOSING_TEXT;
-    showOutput(text, 'AI生成');
+    state.coreText = core.trim();
+    finalizeOutput();
   } catch (e) {
-    alert(`エラーが発生しました:\n${e.message}`);
+    alert('生成中にエラーが発生しました:\n' + e.message);
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.textContent = '返信文を作る';
+    btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '鑑定文を作る';
   }
 }
 
-function showOutput(text, modeLabel) {
-  const question = document.getElementById('question').value.trim() || '（未入力）';
-  const card = CARDS[selectedCard];
-  const posLabel = position === 'upright' ? '正位置' : '逆位置';
-  const header = `■ご相談\n${question}\n\n■カード\n${card.name}（${posLabel}）\n\n■カードの意味\n`;
-  document.getElementById('output-text').textContent = header + text;
-  document.getElementById('output-mode-tag').textContent = modeLabel;
-
-  if (selectedCard !== null) {
-    const card = CARDS[selectedCard];
-    const upsell = CONFIG.UPSELL[card.category] || CONFIG.UPSELL['その他'];
-    const url = upsell.plan === 'matsu' ? CONFIG.BASE_URL_MATSU : CONFIG.BASE_URL_UME;
-    const btnLabel = upsell.plan === 'matsu' ? '本気プラン ¥15,000 を見る →' : '迷いプラン ¥3,000 を見る →';
-    document.getElementById('upsell-text').textContent = upsell.text;
-    document.getElementById('upsell-btn').href = url;
-    document.getElementById('upsell-btn').textContent = btnLabel;
-    document.getElementById('upsell-section').style.display = 'block';
+async function continueWriting() {
+  if (state.mode !== 'ai') return;
+  const apiKey = getApiKey();
+  if (!apiKey) { openSettings(); return; }
+  const btn = document.getElementById('continue-btn');
+  btn.disabled = true; btn.textContent = '追記中...';
+  try {
+    const more = await callGemini(buildContinuePrompt());
+    state.coreText = state.coreText.trim() + '\n\n' + more.trim();
+    finalizeOutput();
+  } catch (e) {
+    alert('追記中にエラーが発生しました:\n' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '続きを追記する（AI）';
   }
+}
 
+function buildUpsellBlock(acc, planKey) {
+  const u = acc.upsell;
+  let body;
+  if (planKey === 'deep') {
+    body = u.final;
+  } else if (planKey === 'main') {
+    body = u.complete + '\n\n' + u.toDeep.replace('{URL}', CONFIG.URLS.TO_DEEP);
+  } else {
+    body = u.complete + '\n\n' + u.toMain.replace('{URL}', CONFIG.URLS.TO_MAIN);
+  }
+  return '■ 最後に\n\n' + body;
+}
+
+function finalizeOutput() {
+  const acc = ACCOUNTS[state.account];
+  const upsell = buildUpsellBlock(acc, state.plan);
+  const full = state.coreText.trim() + '\n\n' + upsell;
+  document.getElementById('output-text').value = full;
+  document.getElementById('output-mode-tag').textContent = state.mode === 'ai' ? 'AI生成' : 'テンプレート';
   const area = document.getElementById('output-area');
   area.classList.add('visible');
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.getElementById('copy-msg').classList.add('hidden');
+  updateCounters();
+}
+
+// ── Counters / warnings ──
+function updateCounters() {
+  const text = document.getElementById('output-text').value;
+  const count = Array.from(text).length;
+  const plan = PLANS[state.plan];
+  const met = plan.approx ? count >= 250 : count >= plan.target;
+  const label = plan.approx
+    ? ('現在' + count + '文字／目安' + plan.target + '字')
+    : ('現在' + count + '文字／目標' + plan.target + '字以上');
+  const counterEl = document.getElementById('char-counter');
+  counterEl.textContent = label;
+  counterEl.className = 'char-counter ' + (met ? 'counter-ok' : 'counter-bad');
+
+  const banned = BANNED_WORDS.filter(w => text.includes(w));
+  const bannedEl = document.getElementById('banned-warning');
+  if (banned.length) {
+    bannedEl.style.display = 'block';
+    bannedEl.textContent = '⚠️ 断定語が含まれています。修正してください。（該当: ' + banned.join('、') + '）';
+  } else {
+    bannedEl.style.display = 'none';
+  }
+
+  document.getElementById('url-warning').style.display = text.includes('【') ? 'block' : 'none';
+  document.getElementById('continue-btn').style.display = (state.mode === 'ai' && !met) ? 'block' : 'none';
 }
 
 // ── Copy / Reset ──
@@ -1376,31 +831,22 @@ function showCopyMsg(msg) {
   setTimeout(() => el.classList.add('hidden'), 2000);
 }
 
-function copyText() {
-  const text = document.getElementById('output-text').textContent;
-  navigator.clipboard.writeText(text).then(() => showCopyMsg('返信文をコピーしました'));
-}
-
-function copyAll() {
-  const reply = document.getElementById('output-text').textContent;
-  const upsellSection = document.getElementById('upsell-section');
-  let text = reply;
-  if (upsellSection.style.display !== 'none') {
-    const upsellText = document.getElementById('upsell-text').textContent;
-    const upsellBtn = document.getElementById('upsell-btn');
-    text += '\n\n─────────────\n' + upsellText + '\n▶ ' + upsellBtn.textContent + '\n   ' + upsellBtn.href + '\n─────────────';
-  }
-  navigator.clipboard.writeText(text).then(() => showCopyMsg('全部コピーしました'));
+function copyOutput() {
+  const text = document.getElementById('output-text').value;
+  navigator.clipboard.writeText(text).then(() => showCopyMsg('コピーしました')).catch(() => {
+    showCopyMsg('コピーに失敗しました。手動で選択してください。');
+  });
 }
 
 function resetOutput() {
-  document.getElementById('output-area').classList.remove('visible');
-  document.getElementById('upsell-section').style.display = 'none';
+  hideOutput();
+  document.getElementById('consult-text').value = '';
+  updateGenerateBtn();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── Settings ──
-function getApiKey() { return localStorage.getItem('kurokara_gemini_key') || ''; }
+function getApiKey() { return localStorage.getItem('mikazuki_gemini_key') || ''; }
 
 function openSettings() {
   document.getElementById('api-key-input').value = getApiKey();
@@ -1408,442 +854,32 @@ function openSettings() {
   document.getElementById('api-status').className = 'api-status';
   document.getElementById('modal-overlay').classList.add('open');
 }
-
-function closeSettings() {
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-
-function onOverlayClick(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeSettings();
-}
+function closeSettings() { document.getElementById('modal-overlay').classList.remove('open'); }
+function onOverlayClick(e) { if (e.target === document.getElementById('modal-overlay')) closeSettings(); }
 
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
   if (!key) { clearApiKey(); return; }
-  localStorage.setItem('kurokara_gemini_key', key);
+  localStorage.setItem('mikazuki_gemini_key', key);
   document.getElementById('settings-btn').classList.add('has-key');
   const st = document.getElementById('api-status');
-  st.textContent = '保存しました';
-  st.className = 'api-status ok';
+  st.textContent = '保存しました'; st.className = 'api-status ok';
   document.getElementById('no-key-warn').style.display = 'none';
   setTimeout(closeSettings, 800);
 }
 
 function clearApiKey() {
-  localStorage.removeItem('kurokara_gemini_key');
+  localStorage.removeItem('mikazuki_gemini_key');
   document.getElementById('api-key-input').value = '';
   document.getElementById('settings-btn').classList.remove('has-key');
   const st = document.getElementById('api-status');
-  st.textContent = 'APIキーを削除しました';
-  st.className = 'api-status err';
-}
-
-// ── Card Image Paths ──
-const CARD_IMGS = [
-  'card-00-fool', 'card-01-magician', 'card-02-high-priestess',
-  'card-03-empress', 'card-04-emperor', 'card-05-hierophant',
-  'card-06-lovers', 'card-07-chariot', 'card-08-strength',
-  'card-09-hermit', 'card-10-wheel', 'card-11-justice',
-  'card-12-hanged-man', 'card-13-death', 'card-14-temperance',
-  'card-15-devil', 'card-16-tower', 'card-17-star',
-  'card-18-moon', 'card-19-sun', 'card-20-judgement', 'card-21-world'
-];
-
-// ── Random ──
-function randomFree() {
-  const id = Math.floor(Math.random() * 22);
-  const pos = Math.random() < 0.5 ? 'upright' : 'reversed';
-  selectCard(id);
-  setPosition(pos);
-}
-
-function randomUme() {
-  const ids = [];
-  while (ids.length < 3) {
-    const id = Math.floor(Math.random() * 22);
-    if (!ids.includes(id)) ids.push(id);
-  }
-  [1, 2, 3].forEach(s => { document.getElementById(`ume-sb${s}`).style.display = 'none'; });
-  ids.forEach((id, i) => {
-    const slot = i + 1;
-    const pos = Math.random() < 0.5 ? 'upright' : 'reversed';
-    if (umeCards[i] !== null) {
-      const prev = document.getElementById(`ume-g${slot}-${umeCards[i]}`);
-      if (prev) prev.classList.remove('selected');
-    }
-    umeCards[i] = id;
-    umePositions[i] = pos;
-    const cardEl = document.getElementById(`ume-g${slot}-${id}`);
-    if (cardEl) cardEl.classList.add('selected');
-    document.getElementById(`ume-p${slot}u`).classList.toggle('selected', pos === 'upright');
-    document.getElementById(`ume-p${slot}r`).classList.toggle('selected', pos === 'reversed');
-    const posLabel = pos === 'upright' ? '正' : '逆';
-    const sv = document.getElementById(`ume-sv${slot}`);
-    sv.textContent = `${CARDS[id].name}（${posLabel}）▾`;
-    sv.classList.add('chosen');
-  });
-  updateUmeBtn();
-}
-
-// ── Plan ──
-let currentPlan = 'free';
-let umeCards    = [null, null, null];
-let umePositions = ['upright', 'upright', 'upright'];
-
-function setPlan(el, plan) {
-  currentPlan = plan;
-  document.querySelectorAll('.plan-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('flow-free').style.display   = plan === 'free'   ? 'block' : 'none';
-  document.getElementById('flow-ume').style.display    = plan === 'ume'    ? 'block' : 'none';
-  document.getElementById('flow-lumnis').style.display = plan === 'lumnis' ? 'block' : 'none';
-}
-
-// ── Ume: Card Slots ──
-function toggleSlot(slot) {
-  const body = document.getElementById(`ume-sb${slot}`);
-  const isOpen = body.style.display !== 'none';
-  [1, 2, 3].forEach(s => { document.getElementById(`ume-sb${s}`).style.display = 'none'; });
-  if (!isOpen) body.style.display = 'block';
-}
-
-function selectUmeCard(slot, id) {
-  if (umeCards[slot-1] !== null) {
-    const prev = document.getElementById(`ume-g${slot}-${umeCards[slot-1]}`);
-    if (prev) prev.classList.remove('selected');
-  }
-  umeCards[slot-1] = id;
-  document.getElementById(`ume-g${slot}-${id}`).classList.add('selected');
-
-  const posLabel = umePositions[slot-1] === 'upright' ? '正' : '逆';
-  const sv = document.getElementById(`ume-sv${slot}`);
-  sv.textContent = `${CARDS[id].name}（${posLabel}）▾`;
-  sv.classList.add('chosen');
-
-  document.getElementById(`ume-sb${slot}`).style.display = 'none';
-  if (slot < 3) document.getElementById(`ume-sb${slot+1}`).style.display = 'block';
-
-  updateUmeBtn();
-}
-
-function setUmePos(slot, pos) {
-  umePositions[slot-1] = pos;
-  document.getElementById(`ume-p${slot}u`).classList.toggle('selected', pos === 'upright');
-  document.getElementById(`ume-p${slot}r`).classList.toggle('selected', pos === 'reversed');
-  if (umeCards[slot-1] !== null) {
-    const posLabel = pos === 'upright' ? '正' : '逆';
-    document.getElementById(`ume-sv${slot}`).textContent = `${CARDS[umeCards[slot-1]].name}（${posLabel}）▾`;
-  }
-}
-
-function updateUmeBtn() {
-  document.getElementById('ume-gen-btn').disabled = umeCards.some(c => c === null);
-}
-
-function renderUmeGrids() {
-  [1, 2, 3].forEach(slot => {
-    const grid = document.getElementById(`ume-g${slot}`);
-    if (!grid) return;
-    grid.innerHTML = CARDS.map(card => `
-      <div class="card-item" id="ume-g${slot}-${card.id}" onclick="selectUmeCard(${slot}, ${card.id})">
-        <span class="card-num">${card.id}</span>
-        <span class="card-name">${card.name}</span>
-      </div>
-    `).join('');
-  });
-}
-
-// ── Ume: Generate ──
-async function generateUme() {
-  const apiKey = getApiKey();
-  if (!apiKey) { openSettings(); return; }
-
-  const question = document.getElementById('ume-question').value.trim();
-  const cardData = umeCards.map((id, i) => {
-    const pos = umePositions[i];
-    return { card: CARDS[id], pos, posLabel: pos === 'upright' ? '正位置' : '逆位置', meaning: CARDS[id][pos].meaning };
-  });
-
-  const prompt = `あなたは「黒烏タロット」という転職専門の占い師です。
-口調: 丁寧だが率直、辛口リアル系。一文は短く（体言止め可）、絵文字は使わない。
-
-以下の3枚のカードをもとに、有料鑑定（迷いプラン）の鑑定文を1000〜1200字で書いてください。
-締めの言葉は不要です。
-
-【相談者の質問】
-${question || '（未入力）'}
-
-【カード1・現在】${cardData[0].card.name}（${cardData[0].posLabel}）→ 今の自分・職場の本質
-【カード2・障壁】${cardData[1].card.name}（${cardData[1].posLabel}）→ 転職を阻んでいるもの
-【カード3・その先】${cardData[2].card.name}（${cardData[2].posLabel}）→ 動いた先に待っているもの
-
-【各カードの転職文脈での解釈】
-カード1（現在）- ${cardData[0].meaning}
-カード2（障壁）- ${cardData[1].meaning}
-カード3（その先）- ${cardData[2].meaning}
-
-【出力フォーマット】必ず以下の見出しと空行を使って3ブロックで出力すること：
-
-【現在】
-（カード1の内容。読んだ人が「私のことを見ている」と感じるくらい具体的に。3〜5文）
-
-【障壁】
-（カード2の内容。「〜かもしれない」は使わず断言する。恐怖・執着・思い込みを言語化。3〜5文）
-
-【その先】
-（カード3の内容。希望と現実を両方示す。前向きかつ静かなトーンで締める。3〜5文）`;
-
-  const btn = document.getElementById('ume-gen-btn');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = '生成中...';
-
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-        ]
-      })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    const parts = data.candidates?.[0]?.content?.parts || [];
-    const body = parts.map(p => p.text || '').join('').trim();
-    showKantei(question, cardData, body);
-  } catch (e) {
-    alert(`エラーが発生しました:\n${e.message}`);
-  } finally {
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.textContent = '鑑定書を作る';
-    updateUmeBtn();
-  }
-}
-
-function showKantei(question, cardData, readingText) {
-  const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  document.getElementById('kantei-doc-num').textContent =
-    `鑑定日　${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())}`;
-  document.getElementById('kantei-q').textContent = question || '（未入力）';
-  const spreadLabels = ['現在', '障壁', 'その先'];
-  document.getElementById('kantei-cards').innerHTML = cardData.map((c, i) => {
-    const imgFile = CARD_IMGS[c.card.id];
-    const isRev = c.pos === 'reversed';
-    return `
-      <div class="kantei-card-chip">
-        <span class="kantei-card-chip-pos">${spreadLabels[i]}</span>
-        <div class="kantei-card-img-wrap">
-          <img class="kantei-card-img${isRev ? ' reversed' : ''}"
-               src="assets/cards/${imgFile}.png"
-               alt="${c.card.name}"
-               onerror="this.parentElement.classList.add('img-missing')">
-          <div class="kantei-card-img-placeholder">🃏</div>
-        </div>
-        <span class="kantei-card-chip-name">${c.card.name}</span>
-        <span class="kantei-card-chip-orient">${c.posLabel}</span>
-      </div>
-    `;
-  }).join('');
-  const readingEl = document.getElementById('kantei-reading');
-  readingEl.innerHTML = readingText
-    .replace(/【(現在|障壁|その先)】/g, '<span class="kantei-section-label">【$1】</span>')
-    .replace(/\n/g, '<br>');
-  const area = document.getElementById('ume-output-area');
-  area.classList.add('visible');
-  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function copyKantei() {
-  const q = document.getElementById('kantei-q').textContent;
-  const chips = document.querySelectorAll('.kantei-card-chip');
-  const cards = Array.from(chips).map((el, i) =>
-    `カード${i+1}（${el.querySelector('.kantei-card-chip-pos').textContent}）: ${el.querySelector('.kantei-card-chip-name').textContent}（${el.querySelector('.kantei-card-chip-orient').textContent}）`
-  ).join('\n');
-  const reading = document.getElementById('kantei-reading').innerText;
-  const text = `■ご相談\n${q}\n\n■カード\n${cards}\n\n■鑑定\n${reading}\n\n甘い言葉より、本当の答えを。🖤\n黒烏タロット | @kurogarasu_tarot`;
-  navigator.clipboard.writeText(text).then(() => {
-    const msg = document.getElementById('ume-copy-msg');
-    msg.textContent = 'コピーしました';
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 2000);
-  });
-}
-
-function resetUme() {
-  document.getElementById('ume-output-area').classList.remove('visible');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ── LUMNIS ──
-const LUMNIS_GLEAM_URL = 'https://uranai.short.gy/QauUxW';
-const LUMNIS_READINGS = {
-  1: {
-    master: false,
-    essence: "1は、開拓の数。\n自分で道を切り開く力を持っています。",
-    money: "お金の流れも、「待つ」より「動く」で開きます。\n行動を起こした瞬間に、流れが変わりやすい数字です。\n一歩踏み出すたびに、豊かさが応えてくれます。",
-    advice: "誰かに背中を押してもらうより、自分が先に動くことで流れが開きます。\n「まだ早い」と感じた時が、実は動き出すサインです。\n最初の一歩は、小さくていい。"
-  },
-  2: {
-    master: false,
-    essence: "2は、縁の数。\n繋がりの中に、豊かさの種があります。",
-    money: "ひとりで頑張るより、誰かと組む時に収入の扉が開きます。\n人への丁寧さと気配りが、そのままお金の流れになる数字です。\nあなたの豊かさは、必ず「人」から来ます。",
-    advice: "ただし、与えすぎて消耗するのも2の特徴です。\n自分を大切にすることも、豊かさを受け取る準備になります。\n「受け取る」を、少し練習してみてください。"
-  },
-  3: {
-    master: false,
-    essence: "3は、創造の数。\n表現することが、そのまま収入になります。",
-    money: "好きなこと、感じたことを外に出すほど豊かさが増す数字です。\n「自分なんて」と抑えるほど、お金の流れも細くなります。\nあなたの感性は、資産です。",
-    advice: "完璧を目指す必要はありません。\n今日感じたことをそのまま出す「継続」が、3の最大の武器です。\n一度きりより、少しずつ積み重ねることを意識してみてください。"
-  },
-  4: {
-    master: false,
-    essence: "4は、積み上げの数。\n着実に重ねることが、本物の豊かさを作ります。",
-    money: "近道より、一歩ずつ積む道があなたに合っています。\n時間をかけて築いたものほど、崩れない豊かさになる数字です。\n今やっていることを、信じてください。",
-    advice: "周りと比べて焦る必要はありません。\n4の豊かさには「時間」という土台が必要です。\n今積んでいるものは、必ず形になります。"
-  },
-  5: {
-    master: false,
-    essence: "5は、変化の数。\n動き続けることで、豊かさが流れ込みます。",
-    money: "固定した場所、固定した方法にこだわると流れが止まります。\n変化をポジティブに受け取れるほど、お金の入り口が増える数字です。\n「変わること」が、あなたの最大の強みです。",
-    advice: "収入の入り口をひとつに絞らないことも、5には大切です。\n副業・投資・複数の流れを持つほど、豊かさが安定します。\n「選択肢を増やす」意識を持ってみてください。"
-  },
-  6: {
-    master: false,
-    essence: "6は、愛と調和の数。\n与える行為が、豊かさを呼び込みます。",
-    money: "身の回りを整え、人との関係を大切にするほどお金が安定します。\n「もらう前に与える」が、あなたに合ったお金の法則です。\n愛情は、最強の豊かさのエネルギーです。",
-    advice: "財布の中、毎日使うもの、生活の環境を丁寧に扱うことが6のエネルギーを高めます。\n小さな「整える」習慣が、豊かさの受け皿になります。\n今日ひとつ、身の回りを整えてみてください。"
-  },
-  7: {
-    master: false,
-    essence: "7は、探求の数。\n深く知ることが、最大の資産になります。",
-    money: "専門性や知識、洞察力がそのまま収入の源になりやすい数字です。\n表面だけを追わず、本質を掘り下げるほど豊かさが安定します。\nあなたの「知りたい」という気持ちは、武器です。",
-    advice: "人に認められるより先に、自分の中で「これだ」と確信を持てるものを育ててください。\n7の豊かさは、静かな確信から生まれます。\n焦らず、深めることに集中してください。"
-  },
-  8: {
-    master: false,
-    essence: "8は、豊かさの数。\n数秘でもっともお金と縁が深い数字のひとつです。",
-    money: "大きな視点を持ち、スケールを広げるほど豊かさも大きくなります。\nただし、力の使い方が重要な数字でもあります。\n自分と周囲のために使う時、8は最大の力を発揮します。",
-    advice: "お金を「怖いもの」「汚いもの」と感じていると、8の力が半減します。\n豊かさを当然のものとして受け取る意識が、この数字には特に重要です。\n「豊かさは私のそばにある」と、今日から意識してみてください。"
-  },
-  9: {
-    master: false,
-    essence: "9は、循環の数。\n手放すほど、大きくなって返ってきます。",
-    money: "「執着しない」「与え続ける」が、あなたの豊かさの鍵です。\n循環を信じて動けるほど、お金の流れは豊かになります。\n9が示しているのは、「もう十分にある」という感覚です。",
-    advice: "使っていないもの、終わりにすべき関係、続けていない習慣——手放すことから始めてみてください。\n9は「終わり」から「豊かさ」が始まる数字です。\n今日ひとつ、手放せるものを探してみてください。"
-  },
-  11: {
-    master: true,
-    essence: "11は、光のナンバー。\n直感と感受性が、豊かさへの道を示します。",
-    money: "論理より先に「感じる」が来る時、それがサインです。\n直感を信じて動いた時ほど、お金の流れが整いやすい数字です。\n11を持つ人は、見えない流れを掴む力があります。",
-    advice: "敏感すぎると感じることがあるかもしれませんが、それは11の才能です。\n周りより深く「感じる」力が、豊かさのアンテナになっています。\nその感覚を、大切にしてください。"
-  },
-  22: {
-    master: true,
-    essence: "22は、大地のナンバー。\n大きなビジョンを現実に落とす力を持っています。",
-    money: "スケールを小さくまとめると、豊かさも小さくなります。\n「自分にはそこまでできない」という声を手放すほど、数字が本来の力を発揮します。\n22は、現実を変えるために生まれてきた数字です。",
-    advice: "大きなビジョンを持ちながら、今日できる小さな一歩を選ぶ。\n22の豊かさはその繰り返しで現実になっていきます。\n夢を語ることを、恥ずかしがらないでください。"
-  },
-  33: {
-    master: true,
-    essence: "33は、愛のナンバー。\n人の役に立つことが、最大の豊かさを生みます。",
-    money: "奉仕と愛情が、循環の核心にある数字です。\n「誰かのために」という動機が最も力強く、お金の流れを呼び込みます。\n33は、愛が豊かさそのものであることを知っています。",
-    advice: "ただ、自分自身への愛情も忘れないでください。\n自分を満たしてから与えるサイクルが、33の豊かさを持続させます。\nまず自分に優しくすることが、循環の起点になります。"
-  }
-};
-
-function calcDestinyNumber(dateStr) {
-  const digits = dateStr.replace(/\D/g, '');
-  if (digits.length < 8) return null;
-  let sum = digits.split('').reduce((a, d) => a + parseInt(d), 0);
-  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
-    sum = String(sum).split('').reduce((a, d) => a + parseInt(d), 0);
-  }
-  return sum;
-}
-
-function getCalcSteps(digits) {
-  const parts = [digits.split('').join('+')];
-  let sum = digits.split('').reduce((a, d) => a + parseInt(d), 0);
-  parts[0] += '=' + sum;
-  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
-    const prev = sum;
-    sum = String(sum).split('').reduce((a, d) => a + parseInt(d), 0);
-    parts.push(String(prev).split('').join('+') + '=' + sum);
-  }
-  const masterNote = (sum === 11 || sum === 22 || sum === 33) ? `（※${sum}はマスターナンバーです。11・22・33はそれ以上足さず、この数字が運命数になります）` : '';
-  return parts.join(' → ') + masterNote;
-}
-
-function buildLumnisReply(destinyNum, digits) {
-  const r = LUMNIS_READINGS[destinyNum];
-  if (!r) return null;
-  const masterLine = r.master ? '\nマスターナンバーをお持ちです。' : '';
-  const calcStr = getCalcSteps(digits);
-  return `送ってくれてありがとうございます。\nさっそく読んでいきますね。\n\nあなたの生年月日${digits}の運命数の計算は\n${digits} → ${calcStr}\n\n運命数は【${destinyNum}】です。${masterLine}\n\n${r.essence}\n\n${r.money}\n\n${r.advice}\n\n---\n\n数字はまだ、語り続けています。\n\nGLEAMプランでは今年の流れまで読めます（¥5,000）\n${LUMNIS_GLEAM_URL} ✨`;
-}
-
-function updateLumnisBtn() {
-  const digits = document.getElementById('lumnis-date').value.replace(/\D/g, '');
-  document.getElementById('lumnis-gen-btn').disabled = digits.length !== 8;
-}
-
-function generateLumnis() {
-  const digits = document.getElementById('lumnis-date').value.replace(/\D/g, '');
-  if (digits.length !== 8) {
-    alert('生年月日を8桁で入力してください（例: 19900315）');
-    return;
-  }
-  const destinyNum = calcDestinyNumber(digits);
-  if (!destinyNum || !LUMNIS_READINGS[destinyNum]) {
-    alert('計算に失敗しました。生年月日を確認してください。');
-    return;
-  }
-  const r = LUMNIS_READINGS[destinyNum];
-  document.getElementById('lumnis-dest-num').textContent = `運命数 【${destinyNum}】`;
-  document.getElementById('lumnis-dest-sub').textContent = r.master ? 'マスターナンバー' : '';
-  document.getElementById('lumnis-calc-steps').textContent = digits + ' → ' + getCalcSteps(digits);
-  document.getElementById('lumnis-output-text').textContent = buildLumnisReply(destinyNum, digits);
-  const area = document.getElementById('lumnis-output-area');
-  area.classList.add('visible');
-  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function copyLumnis() {
-  const text = document.getElementById('lumnis-output-text').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const msg = document.getElementById('lumnis-copy-msg');
-    msg.textContent = 'コピーしました';
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 2000);
-  });
-}
-
-function resetLumnis() {
-  document.getElementById('lumnis-output-area').classList.remove('visible');
-  document.getElementById('lumnis-date').value = '';
-  document.getElementById('lumnis-calc-steps').textContent = '';
-  document.getElementById('lumnis-gen-btn').disabled = true;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  st.textContent = 'APIキーを削除しました'; st.className = 'api-status err';
+  if (state.mode === 'ai') document.getElementById('no-key-warn').style.display = 'block';
 }
 
 // ── Boot ──
-renderCards();
-renderUmeGrids();
+updateItemsPreview();
 if (getApiKey()) document.getElementById('settings-btn').classList.add('has-key');
-document.getElementById('version-tag').textContent = `v${CONFIG.VERSION}`;
 </script>
 </body>
 </html>
