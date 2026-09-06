@@ -366,9 +366,20 @@ const CONFIG = {
   VERSION: '1.1.0',
   GEMINI_MODEL: 'gemini-flash-latest',
   GEMINI_FALLBACK: 'gemini-flash-lite-latest',
+  // アカウント別の誘導先URL（出品でき次第、実URLに差し替える）
   URLS: {
-    TO_MAIN: '【本鑑定URL（出品後に差し替え）】',
-    TO_DEEP: '【深掘りURL（出品後に差し替え）】'
+    kotoha: {
+      MAIN: 'https://coconala.com/services/4386983',
+      DEEP: '【深掘りURL（出品後に差し替え）】'
+    },
+    kuroi: {
+      MAIN: '【本鑑定URL（出品後に差し替え）】',
+      DEEP: '【深掘りURL（出品後に差し替え）】'
+    },
+    shiori: {
+      MAIN: '【本鑑定URL（出品後に差し替え）】',
+      DEEP: '【深掘りURL（出品後に差し替え）】'
+    }
   }
 };
 
@@ -935,13 +946,14 @@ async function continueWriting() {
 
 function buildUpsellBlock(acc, planKey) {
   const u = acc.upsell;
+  const urls = CONFIG.URLS[acc.key];
   let body;
   if (planKey === 'deep') {
     body = u.final;
   } else if (planKey === 'main') {
-    body = u.complete + '\n\n' + u.toDeep.replace('{URL}', CONFIG.URLS.TO_DEEP);
+    body = u.complete + '\n\n' + u.toDeep.replace('{URL}', urls.DEEP);
   } else {
-    body = u.complete + '\n\n' + u.toMain.replace('{URL}', CONFIG.URLS.TO_MAIN);
+    body = u.complete + '\n\n' + u.toMain.replace('{URL}', urls.MAIN);
   }
   return '■ 最後に\n\n' + body;
 }
