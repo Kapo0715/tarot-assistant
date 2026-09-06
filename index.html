@@ -254,7 +254,7 @@
 <div id="lock-overlay" style="position:fixed;inset:0;z-index:9999;background:#14121c;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;">
   <div style="color:#EDEDF2;font-size:1.1rem;font-weight:700;margin-bottom:6px;">みかづき鑑定室｜鑑定アシスタント</div>
   <div style="color:#9a97ad;font-size:0.85rem;margin-bottom:18px;">あいことばを入力してください</div>
-  <input id="lock-input" type="password" autocomplete="off" style="width:min(320px,80vw);padding:12px 14px;border-radius:10px;border:1px solid #444;background:#1e1b2a;color:#EDEDF2;font-size:1rem;" placeholder="あいことば">
+  <input id="lock-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:min(320px,80vw);padding:12px 14px;border-radius:10px;border:1px solid #444;background:#1e1b2a;color:#EDEDF2;font-size:1rem;-webkit-text-security:disc;" placeholder="あいことば">
   <button id="lock-btn" onclick="tryUnlock()" style="width:min(320px,80vw);margin-top:12px;padding:12px;border-radius:10px;border:none;background:#9B9BD0;color:#14121c;font-weight:700;font-size:1rem;cursor:pointer;">ひらく</button>
   <div id="lock-msg" style="color:#d08a8a;font-size:0.8rem;margin-top:10px;min-height:1em;"></div>
 </div>
