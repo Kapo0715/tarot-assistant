@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <title>みかづき鑑定室｜鑑定アシスタント</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -217,6 +218,12 @@
   .copy-msg { text-align: center; font-size: 0.78rem; color: var(--ok); min-height: 22px; margin-top: 10px; transition: opacity 0.3s; }
   .copy-msg.hidden { opacity: 0; }
 
+  /* ── PDF section ── */
+  #pdf-area .modal-label { margin-top: 4px; }
+  #pdf-area .modal-input { margin-bottom: 14px; }
+  #pdf-area .generate-btn { margin-top: 4px; }
+  .pdf-note { font-size: 0.7rem; color: var(--muted); margin: -6px 0 14px; line-height: 1.6; }
+
   /* ── Settings modal ── */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: flex-end;
@@ -369,6 +376,16 @@ async function tryUnlock() {
     <button class="reset-btn" onclick="resetOutput()">作り直す</button>
   </div>
   <div class="copy-msg hidden" id="copy-msg"></div>
+</div>
+
+<div class="output-area" id="pdf-area">
+  <div class="output-badge">鑑定書PDF</div>
+  <p class="edit-hint">▼ 上の鑑定文（編集後の内容）をもとに、お渡し用の鑑定書PDFを作ります。</p>
+  <div class="modal-label">お客様名</div>
+  <input class="modal-input" type="text" id="pdf-name-input" placeholder="お客様のお名前（〇〇さま の 〇〇部分）">
+  <p class="pdf-note">鑑定日はボタンを押した日の日付が自動で入ります。カード画像の読み込みに数秒かかることがあります。</p>
+  <button class="generate-btn" id="pdf-make-btn" onclick="makeKanteishoPDF()">鑑定書PDFを作る</button>
+  <div class="copy-msg hidden" id="pdf-msg"></div>
 </div>
 
 <!-- Settings Modal -->
@@ -708,6 +725,8 @@ function updateGenerateBtn() {
 
 function hideOutput() {
   document.getElementById('output-area').classList.remove('visible');
+  const pdfArea = document.getElementById('pdf-area');
+  if (pdfArea) pdfArea.classList.remove('visible');
 }
 
 // ── Template mode ──
@@ -828,7 +847,7 @@ fewBlock +
 '【相談文】\n' + consult + '\n\n' +
 '【今回の鑑定内容】\n' + itemsDesc + '\n\n' +
 '【出力フォーマット】\n' + targetLine + '\n' +
-'以下の構成・見出し表記で出力してください（■を使った見出し、項目の前後に空行）。誘導文・アップセルの案内は絶対に書かないでください（こちらで別途付与します）。\n\n' +
+'以下の構成・見出し表記で出力してください（■を使った見出し、項目の前後に空行）。ひとつの■項目の中でも、3〜4文ごとに空行を入れて段落を分け、読みやすくすること。誘導文・アップセルの案内は絶対に書かないでください（こちらで別途付与します）。\n\n' +
 '（冒頭2〜4行: 相談文の固有の状況や言葉を引用しながらの共感・受け止め）\n\n' +
 headingBlocks + deepExtra + '\n\n' +
 '（最後に: 今日からできる具体的な一手をひとつ＋安心の一文で締める。安心の一文の例:「この鑑定はここで終わりです」「信じるかどうかはあなた次第です」等のニュアンスを、あなたの口調で）\n\n' +
@@ -1007,6 +1026,306 @@ function finalizeOutput() {
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.getElementById('copy-msg').classList.add('hidden');
   updateCounters();
+  updatePdfSection();
+}
+
+// ── 鑑定書PDF ──
+const PDF_W = 1240, PDF_H = 1754, PDF_MARGIN = 110;
+// CARDSのidに対応するカード画像ファイル名の日本語表記（フォルダ内のファイル名と一致させる。
+// CARDSの呼称と一部異なる: 5=法王→教皇, 12=吊られた男→吊るされた男）
+const CARD_FILE_BASE = ['愚者', '魔術師', '女教皇', '女帝', '皇帝', '教皇', '恋人たち', '戦車', '力', '隠者',
+  '運命の輪', '正義', '吊るされた男', '死神', '節制', '悪魔', '塔', '星', '月', '太陽', '審判', '世界'];
+
+const PDF_THEME = {
+  kuroi: { bg: '#0D1024', ink: '#EDEDF2', accent: '#E8C547', deco: '#96803C' },
+  kotoha: { bg: '#F7ECE4', ink: '#40302C', accent: '#C99A8C', deco: '#A07468' }
+};
+
+function pdfEligible() {
+  const acc = ACCOUNTS[state.account];
+  return !!acc && acc.usesCards && state.plan === 'deep' && (state.account === 'kotoha' || state.account === 'kuroi');
+}
+
+function formatJPDate(d) {
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function updatePdfSection() {
+  const area = document.getElementById('pdf-area');
+  if (!area) return;
+  if (pdfEligible() && state.cards) {
+    area.classList.add('visible');
+    document.getElementById('pdf-msg').classList.add('hidden');
+  } else {
+    area.classList.remove('visible');
+  }
+}
+
+function pdfFont(size, bold) {
+  return (bold === false ? '' : 'bold ') + size + 'px "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif';
+}
+
+function pdfCenterText(ctx, text, size, bold, y, color) {
+  ctx.font = pdfFont(size, bold);
+  ctx.fillStyle = color;
+  const w = ctx.measureText(text).width;
+  ctx.fillText(text, (PDF_W - w) / 2, y);
+}
+
+// ピクセル幅ベースの折り返し＋行頭禁則（。、）」』！？…は行頭に来ないよう直前の行に含める）
+function pdfWrapPx(ctx, text, size, bold, maxW) {
+  ctx.font = pdfFont(size, bold);
+  const KINSOKU = '。、）」』！？…';
+  const lines = [];
+  String(text).split('\n').forEach(para => {
+    if (!para) { lines.push(''); return; }
+    let cur = '';
+    for (const ch of para) {
+      if (cur && ctx.measureText(cur + ch).width > maxW) {
+        if (KINSOKU.indexOf(ch) !== -1) { cur += ch; continue; }
+        lines.push(cur);
+        cur = ch;
+      } else {
+        cur += ch;
+      }
+    }
+    if (cur) lines.push(cur);
+  });
+  return lines;
+}
+
+function pdfRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function pdfFrame(ctx, theme) {
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = theme.accent;
+  ctx.strokeRect(24, 24, PDF_W - 48, PDF_H - 48);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = theme.deco;
+  ctx.strokeRect(38, 38, PDF_W - 76, PDF_H - 76);
+}
+
+function pdfCardFileName(id, pos) {
+  const num = String(id).padStart(2, '0');
+  const posLabel = pos === 'upright' ? '正' : '逆';
+  return num + '_' + CARD_FILE_BASE[id] + '_' + posLabel + '.jpg';
+}
+
+function pdfLoadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('カード画像の読み込みに失敗しました（' + src + '）'));
+    img.src = src;
+  });
+}
+
+function pdfFitLabel(ctx, text, maxW) {
+  ctx.font = pdfFont(23, true);
+  if (ctx.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t + '…';
+}
+
+async function pdfDrawCover(theme, accKey, client, dateStr, cards, cardLabels, consultText, sig) {
+  const canvas = document.createElement('canvas');
+  canvas.width = PDF_W; canvas.height = PDF_H;
+  const ctx = canvas.getContext('2d');
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = theme.bg;
+  ctx.fillRect(0, 0, PDF_W, PDF_H);
+  pdfFrame(ctx, theme);
+
+  pdfCenterText(ctx, client + 'さま　鑑定書', 52, true, 78, theme.ink);
+  pdfCenterText(ctx, dateStr, 28, false, 156, theme.deco);
+
+  ctx.beginPath();
+  ctx.moveTo(PDF_W / 2 - 190, 208);
+  ctx.lineTo(PDF_W / 2 + 190, 208);
+  ctx.strokeStyle = theme.accent;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  pdfCenterText(ctx, '― あなたに出たカード ―', 38, true, 252, theme.accent);
+
+  const CW = 158, CH = Math.round(PDF_W * CW / 720);
+  const gap = 84, y1 = 330, y2 = y1 + CH + 78;
+  const pos = [];
+  for (let i = 0; i < 3; i++) pos.push([Math.floor((PDF_W - (3 * CW + 2 * gap)) / 2) + i * (CW + gap), y1]);
+  for (let i = 0; i < 2; i++) pos.push([Math.floor((PDF_W - (2 * CW + gap)) / 2) + i * (CW + gap), y2]);
+
+  const images = await Promise.all(cards.map(c => pdfLoadImage('cards/' + accKey + '/' + pdfCardFileName(c.id, c.pos))));
+
+  images.forEach((img, i) => {
+    const x = pos[i][0], y = pos[i][1];
+    ctx.drawImage(img, x, y, CW, CH);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = theme.accent;
+    ctx.strokeRect(x - 2, y - 2, CW + 3, CH + 3);
+    ctx.font = pdfFont(23, true);
+    ctx.fillStyle = theme.ink;
+    const label = cardLabels[i];
+    const lw = ctx.measureText(label).width;
+    ctx.fillText(label, x + (CW - lw) / 2, y + CH + 10);
+  });
+
+  const cy = y2 + CH + 84;
+  pdfCenterText(ctx, '― ご相談内容 ―', 38, true, cy, theme.accent);
+
+  const maxW = PDF_W - 2 * PDF_MARGIN - 16;
+  const lines = pdfWrapPx(ctx, consultText, 28, false, maxW);
+  let ty = cy + 84;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = theme.deco;
+  pdfRoundRect(ctx, PDF_MARGIN - 26, ty - 26, PDF_W - 2 * PDF_MARGIN + 52, lines.length * 50 + 48, 14);
+  ctx.stroke();
+  ctx.font = pdfFont(28, false);
+  ctx.fillStyle = theme.ink;
+  lines.forEach(ln => { ctx.fillText(ln, PDF_MARGIN + 8, ty); ty += 50; });
+
+  pdfCenterText(ctx, sig, 26, false, PDF_H - 92, theme.deco);
+  return canvas;
+}
+
+// 出力テキストエリアの内容から「■ 最後に」(アップセル)以降を除去
+function pdfBodyFromOutput(text) {
+  const idx = text.indexOf('■ 最後に');
+  const body = idx !== -1 ? text.slice(0, idx) : text;
+  return body.trim();
+}
+
+function pdfBuildTextPages(theme, body, startPage) {
+  const measureCanvas = document.createElement('canvas');
+  const mctx = measureCanvas.getContext('2d');
+  mctx.textBaseline = 'top';
+
+  const lineH = 52, blankH = 30, top = 100, bottom = 120;
+  const maxW = PDF_W - 2 * PDF_MARGIN;
+
+  const items = [];
+  body.split('\n').forEach(para => {
+    if (!para.trim()) { items.push(['', 'blank']); return; }
+    const isHead = para.startsWith('■');
+    pdfWrapPx(mctx, para, isHead ? 33 : 29, isHead, maxW).forEach(ln => items.push([ln, isHead ? 'head' : 'body']));
+  });
+  // ■見出し直後の空行は詰める
+  for (let j = items.length - 1; j > 0; j--) {
+    if (items[j][1] === 'blank' && items[j - 1][1] === 'head') items.splice(j, 1);
+  }
+
+  const pages = [];
+  let pno = startPage, first = true, i = 0;
+  while (i < items.length) {
+    const canvas = document.createElement('canvas');
+    canvas.width = PDF_W; canvas.height = PDF_H;
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = theme.bg;
+    ctx.fillRect(0, 0, PDF_W, PDF_H);
+    pdfFrame(ctx, theme);
+
+    let y = top;
+    if (first) {
+      pdfCenterText(ctx, '― カードからわかること ―', 42, true, y, theme.accent);
+      y += 104;
+      first = false;
+    }
+
+    const startI = i;
+    while (i < items.length) {
+      const ln = items[i][0], kind = items[i][1];
+      const h = (kind === 'blank' || kind === 'halfblank') ? blankH : lineH;
+      if (y + h > PDF_H - bottom) break;
+      // ■見出しがページ末尾で孤立する場合は次ページへ(見出し+本文1行分の余地が必要)
+      if (kind === 'head' && (i === 0 || items[i - 1][1] !== 'head') && y + lineH * 2 > PDF_H - bottom) break;
+      if (kind === 'head') {
+        ctx.font = pdfFont(33, true);
+        ctx.fillStyle = theme.accent;
+        ctx.fillText(ln, PDF_MARGIN, y);
+      } else if (kind === 'body') {
+        ctx.font = pdfFont(29, false);
+        ctx.fillStyle = theme.ink;
+        ctx.fillText(ln, PDF_MARGIN, y);
+      }
+      y += (kind === 'halfblank') ? 14 : h;
+      i++;
+    }
+    if (i === startI) i++; // 安全弁: 1項目もはまらない場合の無限ループ防止
+
+    pdfCenterText(ctx, '- ' + pno + ' -', 23, false, PDF_H - 78, theme.deco);
+    pages.push(canvas);
+    pno++;
+  }
+  return pages;
+}
+
+async function makeKanteishoPDF() {
+  const acc = ACCOUNTS[state.account];
+  const theme = PDF_THEME[state.account];
+  const nameInput = document.getElementById('pdf-name-input');
+  const name = nameInput.value.trim();
+  if (!name) { alert('お客様名を入力してください'); return; }
+  if (!theme || !pdfEligible()) { alert('鑑定書PDFはこのアカウント・プランでは作成できません'); return; }
+  const cards = state.cards;
+  if (!cards || cards.length < 5) { alert('カード情報が見つかりません。鑑定文を作り直してください。'); return; }
+
+  // 鑑定日はボタンを押した日を自動セット
+  const now = new Date();
+  const dateStr = formatJPDate(now);
+  const ymd = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+
+  const btn = document.getElementById('pdf-make-btn');
+  const msg = document.getElementById('pdf-msg');
+  btn.disabled = true; btn.textContent = 'PDF作成中...';
+  msg.classList.add('hidden');
+
+  try {
+    const nums = ['①', '②', '③', '④', '⑤'];
+    const rawLabels = acc.itemLabels.deep;
+    const measureCanvas = document.createElement('canvas');
+    const mctx = measureCanvas.getContext('2d');
+    const CW = 158;
+    const cardLabels = rawLabels.map((l, i) => pdfFitLabel(mctx, nums[i] + l, CW + 70));
+
+    const consultText = document.getElementById('consult-text').value.trim();
+    const sig = acc.name + '｜' + acc.sub + '　･　みかづき鑑定室';
+
+    const coverCanvas = await pdfDrawCover(theme, acc.key, name, dateStr, cards, cardLabels, consultText, sig);
+
+    const outputText = document.getElementById('output-text').value;
+    const body = pdfBodyFromOutput(outputText);
+    const bodyCanvases = pdfBuildTextPages(theme, body, 2);
+
+    if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('PDFライブラリの読み込みに失敗しました。通信環境を確認してもう一度お試しください。');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = 595.28, pageH = 841.89;
+
+    const allCanvases = [coverCanvas].concat(bodyCanvases);
+    allCanvases.forEach((canvas, i) => {
+      if (i > 0) doc.addPage();
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      doc.addImage(dataUrl, 'JPEG', 0, 0, pageW, pageH);
+    });
+
+    doc.save(ymd + '_鑑定書_' + name + 'さま.pdf');
+    msg.textContent = 'PDFを作成しました';
+    msg.classList.remove('hidden');
+  } catch (e) {
+    msg.textContent = 'PDF作成に失敗しました: ' + e.message;
+    msg.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = '鑑定書PDFを作る';
+  }
 }
 
 // ── Counters / warnings ──
