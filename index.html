@@ -301,15 +301,15 @@ async function tryUnlock() {
   <div class="account-tabs">
     <button class="account-btn selected" id="acc-kotoha" onclick="setAccount('kotoha')">
       <span class="acc-name">ことは</span>
-      <span class="acc-sub">復縁タロット</span>
+      <span class="acc-sub">復縁とタイミング｜言の葉結び</span>
     </button>
     <button class="account-btn" id="acc-kuroi" onclick="setAccount('kuroi')">
       <span class="acc-name">黒烏</span>
-      <span class="acc-sub">言えない恋のタロット</span>
+      <span class="acc-sub">言えない恋｜羽結び</span>
     </button>
     <button class="account-btn" id="acc-shiori" onclick="setAccount('shiori')">
       <span class="acc-name">栞奈</span>
-      <span class="acc-sub">お清め開運</span>
+      <span class="acc-sub">お清めと開運｜栞数</span>
     </button>
   </div>
 </section>
@@ -318,31 +318,47 @@ async function tryUnlock() {
   <div class="label"><span class="step-num">2</span>プランを選ぶ</div>
   <div class="plan-grid">
     <button class="plan-btn selected" id="plan-free" onclick="setPlan('free')">
-      <span class="plan-name">無料LINE相談</span>
-      <span class="plan-price">無料</span>
+      <span class="plan-name">無料相談</span>
+      <span class="plan-price" id="price-free">無料</span>
       <span class="plan-target">目安300字</span>
     </button>
     <button class="plan-btn" id="plan-lite" onclick="setPlan('lite')">
-      <span class="plan-name">お試し</span>
-      <span class="plan-price">¥500</span>
+      <span class="plan-name">一言鑑定</span>
+      <span class="plan-price" id="price-lite">¥1,000</span>
       <span class="plan-target">500字以上</span>
     </button>
     <button class="plan-btn" id="plan-main" onclick="setPlan('main')">
-      <span class="plan-name">本鑑定</span>
-      <span class="plan-price">¥3,000</span>
+      <span class="plan-name">標準（結び）</span>
+      <span class="plan-price" id="price-main">¥4,500</span>
       <span class="plan-target">1,800字以上</span>
     </button>
     <button class="plan-btn" id="plan-deep" onclick="setPlan('deep')">
-      <span class="plan-name">深掘り</span>
-      <span class="plan-price">¥5,000</span>
+      <span class="plan-name">深み鑑定</span>
+      <span class="plan-price" id="price-deep">¥8,500</span>
       <span class="plan-target">3,500字以上</span>
+    </button>
+    <button class="plan-btn" id="plan-kiwami" onclick="setPlan('kiwami')">
+      <span class="plan-name">極み鑑定</span>
+      <span class="plan-price" id="price-kiwami">¥15,000</span>
+      <span class="plan-target">手相つき</span>
     </button>
   </div>
   <div class="items-preview" id="items-preview"></div>
 </section>
 
+<section id="numbers-section">
+  <div class="label"><span class="step-num">3</span>数字を入力する</div>
+  <div class="modal-input-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <input class="modal-input" type="text" id="birthdate-input" placeholder="購入者の生年月日（例: 1995-03-21）" oninput="updateItemsPreview()" style="flex:1;min-width:220px">
+    <input class="modal-input" type="number" id="kakusu-self-input" placeholder="購入者の画数（姓名判断）" oninput="updateItemsPreview()" style="flex:1;min-width:180px">
+    <input class="modal-input" type="number" id="kakusu-partner-input" placeholder="お相手の画数（結び以上のみ）" oninput="updateItemsPreview()" style="flex:1;min-width:180px">
+  </div>
+  <p class="hint-text" id="numbers-hint" style="font-size:.85rem;color:#999">画数は、購入者がお名前を無料の姓名判断ツールで調べて教えてくれた数字をそのまま入力してください（自社では計算しません）。</p>
+</section>
+
 <section>
-  <div class="label"><span class="step-num">3</span>相談文を貼り付ける</div>
+  <div class="label"><span class="step-num">4</span>相談文を貼り付ける</div>
+  <input class="modal-input" type="text" id="client-name-input" placeholder="お客様のお呼び名（任意・分かる場合のみ）" style="margin-bottom:10px">
   <textarea id="consult-text" placeholder="お客様から届いた相談文をここに貼り付けてください" oninput="updateGenerateBtn()"></textarea>
 
   <div class="mode-toggle">
@@ -383,7 +399,7 @@ async function tryUnlock() {
   <p class="edit-hint">▼ 上の鑑定文（編集後の内容）をもとに、お渡し用の鑑定書PDFを作ります。</p>
   <div class="modal-label">お客様名</div>
   <input class="modal-input" type="text" id="pdf-name-input" placeholder="お客様のお名前（〇〇さま の 〇〇部分）">
-  <p class="pdf-note">鑑定日はボタンを押した日の日付が自動で入ります。カード画像の読み込みに数秒かかることがあります。</p>
+  <p class="pdf-note">鑑定日はボタンを押した日の日付が自動で入ります。上の「使う数字」欄（生年月日・画数）が入力済みだと、表紙に数字がきれいに入ります。</p>
   <button class="generate-btn" id="pdf-make-btn" onclick="makeKanteishoPDF()">鑑定書PDFを作る</button>
   <div class="copy-msg hidden" id="pdf-msg"></div>
 </div>
@@ -438,42 +454,42 @@ const RISKY_PATTERNS = ['このままだと', 'このままでは', '手遅れ',
 // few-shotお手本（buildAIPromptで文体模倣に使用）。account key → {consult, example}
 const FEWSHOTS = {
   kotoha: {
-    consult: `3ヶ月前、些細な喧嘩がきっかけで彼からの連絡が途絶えました。既読スルーが続いて、共通の友達にも聞けないまま毎日LINEの画面を見ています。彼が今どう思っているのか、この関係がこのまま終わるのか、もう一度向き合うにはわたしはどう動けばいいのか知りたいです。`,
-    example: `メッセージありがとう。3ヶ月間既読がつかないままLINEの画面を見つめ続けてきたんだね、その時間、本当に苦しかったと思う。連絡が来ないのはあなたが悪いからじゃないよ。カードを見せてもらうね。
+    consult: `3ヶ月前、些細な喧嘩がきっかけで彼からの連絡が途絶えました。既読スルーが続いて、共通の友達にも聞けないまま毎日LINEの画面を見ています。彼が今どう思っているのか、この関係がこのまま終わるのか、もう一度向き合うにはわたしはどう動けばいいのか知りたいです。（あなたの生年月日: 1996-04-12／あなたの画数: 23画／お相手の画数: 14画）`,
+    example: `メッセージありがとう。3ヶ月間既読がつかないままLINEの画面を見つめ続けてきたんだね、その時間、本当に苦しかったと思う。連絡が来ないのはあなたが悪いからじゃないよ。言の葉結びで視せてもらうね。
 
-■ お相手の今の気持ち｜カード: 隠者（正位置）
-彼は今、誰にも会いたくない場所にひとりで籠っているような、そんな状態が視えます。喧嘩の後、自分の中の何かと向き合っていて、外に気持ちを向ける余裕がまだ戻っていないようです。既読がつかないのは拒絶というより、自分を整理する時間が必要な段階にいるという流れが出ています。彼の中の灯りが静かに燃えている、そんな時間。
+■ お相手の今の気持ち
+あなたの画数23は大吉の数字で、まっすぐに気持ちを伝えようとする力が強く出ているよ。でも今回は、お相手の14という数字が絡んでいて、これは言葉より先に気持ちが渋滞してしまいやすい数字。彼は今、誰にも会いたくない場所にひとりで籠っているような、そんな状態が視えます。喧嘩の後、自分の中の何かと向き合っていて、外に気持ちを向ける余裕がまだ戻っていないようです。
 
-■ 二人の現在の流れ｜カード: 節制（逆位置）
-今は噛み合わない時期に入っているようです。あなたが送る言葉のタイミングと、彼が受け取れる速さが、すとんとずれてしまっている状態。無理に合わせようとするほど、かえって空回りしやすい流れです。悪い流れというより、まだ調整の途中にいるだけ、そんな時期。
+■ 二人の現在の流れ
+23と14の組み合わせは、一方が支え、一方が支えられる、補い合う関係になりやすい組み合わせ。今は噛み合わない時期に入っているようです。あなたが送る言葉のタイミングと、彼が受け取れる速さが、すとんとずれてしまっている状態。悪い流れというより、まだ調整の途中にいるだけ、そんな時期。
 
-■ これからの向き合い方｜カード: 星（正位置）
-夜が明ける前の空に、小さな光がひとつ灯っている、そんな景色が視えます。今すぐ連絡を返してほしいと動くより、あなた自身が落ち着いて過ごす時間を持つことで、彼の中の余裕もじわじわ戻ってくる可能性が高いと出ています。焦らず待てる人にこそ、星は光を惜しみません。
+■ これからの向き合い方
+夜が明ける前の空に、小さな光がひとつ灯っている、そんな景色が視えます。今すぐ連絡を返してほしいと動くより、あなた自身が落ち着いて過ごす時間を持つことで、彼の中の余裕もじわじわ戻ってくる可能性が高いと出ています。
 
-■ 道すじのまとめ
-ひとりで籠っている隠者の彼、噛み合わない今の節制、その先に見える星の光。3枚は、今の沈黙が終わりではなく、整うまでの通過点であることを教えてくれています。
+■ 言の葉結びのまとめ
+一人で抱え込みやすい彼の14、まっすぐに伝えたいあなたの23。今の沈黙は終わりではなく、二人のペースが整うまでの通過点であることを、この数字の組み合わせは教えてくれています。
 
 今日からできることは、彼への連絡の頻度を一旦決めて、それ以外の時間は自分のための予定を入れてみること。3ヶ月既読がつかないという状況から、こう読み解きました🤍
 
 この鑑定はここで終わりだよ。延長のご案内はしないから安心してね。`
   },
   kuroi: {
-    consult: `職場の既婚の上司のことが好きです。二人きりで話す時間が増えて、優しくされるたびに気持ちが抑えられなくなります。誰にも言えず、この気持ちがどこにも行き場がないまま1年近く経ちました。彼が本当はどう思っているのか、この関係がこの先どうなるのか、自分の気持ちとどう向き合えばいいのか知りたいです。`,
+    consult: `職場の既婚の上司のことが好きです。二人きりで話す時間が増えて、優しくされるたびに気持ちが抑えられなくなります。誰にも言えず、この気持ちがどこにも行き場がないまま1年近く経ちました。彼が本当はどう思っているのか、この関係がこの先どうなるのか、自分の気持ちとどう向き合えばいいのか知りたいです。（あなたの生年月日: 1993-11-02／あなたの画数: 31画／お相手の画数: 42画）`,
     example: `このやりとりが外に出ることはありません。安心して読んでください。
 
-『誰にも言えず、この気持ちがどこにも行き場がないまま1年近く経った』とのこと、その言葉、黒烏はきちんと受け取りました。その苦しさは、あなたが悪いからではありません。
+『誰にも言えず、この気持ちがどこにも行き場がないまま1年近く経った』とのこと、その言葉、黒烏はきちんと受け取りました。その苦しさは、あなたが悪いからではありません。羽結びで視せてもらうね。
 
-■ お相手の本音｜カード: 月（逆位置）
-彼の中には、はっきり言葉にできない靄のようなものがあります。二人きりの時間に見せる優しさは、演技ではないけれど、その奥にあるものを自分でもまだ言語化できていない、そんな状態が視えます。本音を隠しているというより、本音そのものが定まっていない段階のようです。
+■ お相手の本音
+お相手の画数42は、内側に迷いを抱え込みやすい数字。彼の中には、はっきり言葉にできない靄のようなものがあります。二人きりの時間に見せる優しさは、演技ではないけれど、その奥にあるものを自分でもまだ言語化できていない、そんな状態が視えます。本音を隠しているというより、本音そのものが定まっていない段階のようです。
 
-■ この関係の現在地｜カード: 恋人たち（逆位置）
-このカードは、選べないまま立ち止まっている二人を映しています。どちらに進むかを決められないまま、心地よさだけがじわじわ積み重なっている状態。優しさが続くほど、あなたの気持ちも引き離しにくくなる、そういう流れが出ています。進んでも戻ってもいない、そんな場所。
+■ この関係の現在地
+あなたの31と彼の42を並べると、どちらも動き出しにくい、足踏みの組み合わせが出ています。どちらに進むかを決められないまま、心地よさだけがじわじわ積み重なっている状態。優しさが続くほど、あなたの気持ちも引き離しにくくなる、そういう流れが出ています。進んでも戻ってもいない、そんな場所。
 
-■ あなたの心の整理｜カード: 力（正位置）
-力のカードは、荒々しさではなく、静かに保たれた強さ。1年近く抱えてきた気持ちを否定する必要はありません。ただ、本当はどうしたいのか、少しだけ自分に問い直してみる時期に来ているようです。答えを急がなくても大丈夫。
+■ あなたの心の整理
+31という数字は、荒々しさではなく、静かに保たれた強さを持つ数字。1年近く抱えてきた気持ちを否定する必要はありません。ただ、本当はどうしたいのか、少しだけ自分に問い直してみる時期に来ているようです。答えを急がなくても大丈夫。
 
-■ 道すじのまとめ
-言葉にならない月の彼、進めない恋人たちの二人、そして自分を保とうとする力。三枚は、この関係がまだ形になっていないからこそ、あなたが自分の気持ちに正直になる時間が必要だと伝えています。
+■ 羽結びのまとめ
+言葉にならない彼の42、足踏みしている二人の組み合わせ、そして自分を保とうとするあなたの31。この関係がまだ形になっていないからこそ、あなたが自分の気持ちに正直になる時間が必要だと、数字の組み合わせは伝えています。
 
 今日からできることは、彼との関係を進めるかどうかより先に、自分がこの1年で何を感じてきたかを紙に書き出してみること。二人きりの時間が増えたという点から、こう読み解きました🪶
 
@@ -501,11 +517,13 @@ const FEWSHOTS = {
   }
 };
 
+// 2026-09-22価格改訂・プラン構成同期版。priceはアカごとに違うため ACCOUNTS[key].prices で上書きする（ここのpriceは未選択時の仮表示）
 const PLANS = {
-  free: { key: 'free', label: '無料LINE相談', price: '無料', target: 300, approx: true },
-  lite: { key: 'lite', label: 'お試し', price: '¥500', target: 500 },
-  main: { key: 'main', label: '本鑑定', price: '¥3,000', target: 1800 },
-  deep: { key: 'deep', label: '深掘り', price: '¥5,000', target: 3500 }
+  free: { key: 'free', label: '無料相談', price: '無料', target: 300, approx: true },
+  lite: { key: 'lite', label: '一言鑑定', price: '¥1,000', target: 500 },
+  main: { key: 'main', label: '標準（結び鑑定等）', price: '¥4,500', target: 1800 },
+  deep: { key: 'deep', label: '深み鑑定', price: '¥8,500', target: 3500 },
+  kiwami: { key: 'kiwami', label: '極み鑑定', price: '¥15,000', target: 3500 }
 };
 
 // ── 大アルカナ22枚（正逆・関係性文脈の汎用解釈） ──
@@ -554,16 +572,76 @@ const SHIORI_AREA_TEXT = {
   '全体の流れ': 'ここまでの4つを合わせて見ると、今は無理をため込みやすい時期に入っているようです。'
 };
 
+// ── 数秘術（生年月日→1桁、マスターナンバーは特別扱い） ──
+function numerologyNumber(dateStr) {
+  const digits = (dateStr || '').replace(/\D/g, '');
+  if (!digits) return null;
+  let sum = digits.split('').reduce((a, b) => a + parseInt(b, 10), 0);
+  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
+    sum = String(sum).split('').reduce((a, b) => a + parseInt(b, 10), 0);
+  }
+  return sum;
+}
+
+const NUMEROLOGY_MEANING = {
+  1: '自分から動き出す力が強く出ている数字です。今は誰かの後押しを待つより、小さな一歩を自分から踏み出しやすい時期。',
+  2: '相手のペースを大事にする、調和を重んじる数字です。無理に自分から動くより、流れに合わせて待つことが向いている時期。',
+  3: '気持ちを言葉や表情に出しやすい、表現力の数字です。溜め込んできたことを、誰かに話してみると流れが動きやすい時期。',
+  4: '地道に積み重ねる力が強い数字です。派手な変化より、日々の小さな行動の積み重ねが結果につながりやすい時期。',
+  5: '変化や動きを呼び込みやすい数字です。今までと違う選択肢が視野に入りやすく、身軽でいることが流れを助ける時期。',
+  6: '人との関わり・情の深さを表す数字です。誰かを思う気持ちが強く出やすい反面、抱え込みすぎないことも大切な時期。',
+  7: '内省・見極めの数字です。すぐに答えを出すより、一人の時間でじっくり考えることが今の流れに合っている時期。',
+  8: '現実的な力・結果を出す力が強い数字です。気持ちだけでなく、具体的な行動が流れを動かしやすい時期。',
+  9: '手放す・区切りをつける数字です。何かを終わらせることが、次の始まりにつながりやすい時期。',
+  11: 'マスターナンバー。直感が鋭く働きやすい、感受性の強い数字です。頭で考えるより、心が動いた方を信じてよい時期。',
+  22: 'マスターナンバー。大きな流れを形にする力を持つ数字です。今抱えていることが、思っている以上に先につながっていく時期。',
+  33: 'マスターナンバー。人を包み込むような、愛情深い数字です。誰かのために動く気持ちが、巡り巡って自分にも返ってくる時期。'
+};
+
+// ── 姓名判断（画数の吉凶。一般的な画数吉凶表を要約。流派により差があるため鑑定文では断定しない） ──
+const KAKUSU_SAIDAIKICHI = [6, 15, 24, 31, 47, 63];
+const KAKUSU_DAIKICHI = [1, 3, 5, 11, 13, 16, 21, 23, 29, 32, 33, 37, 39, 41, 45, 52, 65, 67, 68];
+const KAKUSU_KICHI = [7, 8, 17, 18, 25, 35, 38, 48, 57, 58, 61, 71, 73, 75, 77, 78];
+const KAKUSU_KYOU = [14, 22, 26, 27, 28, 30, 42, 43, 46, 49, 50, 51, 55, 56, 59, 72, 74];
+const KAKUSU_DAIKYOU = [2, 4, 12, 34, 36, 40, 44, 54, 60, 62, 64, 66, 69, 70, 76, 79, 80];
+const KAKUSU_SAIDAIKYOU = [9, 10, 19, 20];
+
+function kakusuLevel(n) {
+  n = parseInt(n, 10);
+  if (!n || n < 1) return null;
+  if (n > 81) n = ((n - 1) % 81) + 1;
+  if (n === 81) n = 1; // 81画は1画に還るとされる（一般的な慣習）
+  if (KAKUSU_SAIDAIKICHI.includes(n)) return '最大吉';
+  if (KAKUSU_DAIKICHI.includes(n)) return '大吉';
+  if (KAKUSU_KICHI.includes(n)) return '吉';
+  if (KAKUSU_KYOU.includes(n)) return '凶';
+  if (KAKUSU_DAIKYOU.includes(n)) return '大凶';
+  if (KAKUSU_SAIDAIKYOU.includes(n)) return '最大凶';
+  return '半吉'; // 表に無い画数は中間扱い
+}
+
+const KAKUSU_POSITIVE = ['最大吉', '大吉', '吉'];
+
+// 二人の画数レベルの組み合わせから、相性の読み解きの方向性を返す（「結び」の土台）
+function musubiPattern(levelA, levelB) {
+  const posA = KAKUSU_POSITIVE.includes(levelA), posB = KAKUSU_POSITIVE.includes(levelB);
+  if (posA && posB) return '自然に寄り添いやすい、流れの合う組み合わせ';
+  if (posA !== posB) return '一方が支え、一方が支えられる、補い合う関係になりやすい組み合わせ';
+  return '課題が多く出やすい分、向き合うたびに絆を確かめ合う機会が多い組み合わせ';
+}
+
 // ── アカウント定義 ──
 const ACCOUNTS = {
   kotoha: {
-    key: 'kotoha', name: 'ことは', sub: '復縁とタイミングのタロット', theme: 'theme-kotoha',
-    usesCards: true,
+    key: 'kotoha', name: 'ことは', sub: '復縁とタイミング｜言の葉結び', theme: 'theme-kotoha',
+    usesCards: false, usesMusubi: true, musubiName: '言の葉結び',
+    prices: { free: '無料', lite: '¥1,000', main: '¥4,500', deep: '¥8,500', kiwami: '¥15,000' },
     itemLabels: {
       free: ['お相手の気持ちと今の流れ'],
       lite: ['お相手の気持ちと今の流れ'],
       main: ['お相手の今の気持ち', '二人の現在の流れ', 'これからの向き合い方'],
-      deep: ['彼の現在の気持ち', '別れに至った流れ', '復縁の可能性・時期の傾向', 'あなたが動くタイミング', '今からの過ごし方']
+      deep: ['彼の現在の気持ち', '別れに至った流れ', '復縁の可能性・時期の傾向', 'あなたが動くタイミング', '今からの過ごし方'],
+      kiwami: ['彼の現在の気持ち', '別れに至った流れ', '復縁の可能性・時期の傾向', 'あなたが動くタイミング', '今からの過ごし方']
     },
     deepExtraLabel: '30日間の整え方カレンダー（要点）',
     deepExtraText: '最初の10日は気持ちを落ち着けることを優先し、次の10日はお相手との距離感を焦らず保ち、最後の10日は自分自身の時間を大切にしてみてください。',
@@ -577,21 +655,23 @@ const ACCOUNTS = {
     ],
     upsell: {
       complete: '今回いただいたご相談内容については、この鑑定で完結だよ🤍',
-      toMain: 'もし他にも気になることが出てきたら、3つの視点でじっくり読み解く本鑑定（¥3,000）もあるから、よかったら覗いてみてね。\n▶ 本鑑定はこちら：{URL}',
-      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目でまるごと読み解く深掘り鑑定（¥5,000）もあるから、気になったらチェックしてみてね。\n▶ 深掘りはこちら：{URL}',
+      toMain: 'もし他にも気になることが出てきたら、あなたとお相手、二人の言の葉結びまで視る標準（¥4,500）もあるから、よかったら覗いてみてね。\n▶ こちら：{URL}',
+      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目でまるごと読み解く深み鑑定（¥8,500）もあるから、気になったらチェックしてみてね。\n▶ こちら：{URL}',
       final: 'また気持ちが揺れたときは、この鑑定文をお守り代わりに読み返してね🤍'
     },
-    aiPersona: 'あなたは「ことは」という復縁専門のタロット占い師です。一人称は「わたし」。読み手には親友にLINEするようなやわらかい口語（敬体とタメ口のミックス）で語りかけてください。絵文字は🤍を1通1個までに抑えてください。'
+    aiPersona: 'あなたは「ことは」という復縁とタイミング専門の鑑定士です。タロットカードは使わず、数秘術（生年月日）と姓名判断（画数）を組み合わせた「言の葉結び」で相談文から読み解いてください。一人称は「わたし」。読み手には親友にLINEするようなやわらかい口語（敬体とタメ口のミックス）で語りかけてください。絵文字は🤍を1通1個までに抑えてください。'
   },
   kuroi: {
-    key: 'kuroi', name: '黒烏', sub: '言えない恋のタロット', theme: 'theme-kuroi',
-    usesCards: true,
+    key: 'kuroi', name: '黒烏', sub: '言えない恋｜羽結び', theme: 'theme-kuroi',
+    usesCards: false, usesMusubi: true, musubiName: '羽結び',
+    prices: { free: '無料', lite: '¥1,500', main: '¥5,500', deep: '¥10,000', kiwami: '¥20,000' },
     secretLine: 'このやりとりが外に出ることはありません。',
     itemLabels: {
       free: ['お相手の気持ちと今の流れ'],
       lite: ['お相手の気持ちと今の流れ'],
       main: ['お相手の本音', 'この関係の現在地', 'あなたの心の整理'],
-      deep: ['お相手の現在の気持ち', 'これまでの流れ', '今後の傾向', 'あなた自身の気持ちの整理', '心の整え方']
+      deep: ['お相手の現在の気持ち', 'これまでの流れ', '今後の傾向', 'あなた自身の気持ちの整理', '心の整え方'],
+      kiwami: ['お相手の現在の気持ち', 'これまでの流れ', '今後の傾向', 'あなた自身の気持ちの整理', '心の整え方']
     },
     deepExtraLabel: '心の整え方30日',
     deepExtraText: '最初の10日は気持ちを書き出して整理し、次の10日は自分だけの時間を意識的に作り、最後の10日は誰かに話せる小さな一歩を探してみてください。',
@@ -605,20 +685,22 @@ const ACCOUNTS = {
     ],
     upsell: {
       complete: '今回いただいたご相談内容については、この鑑定で完結とさせていただきます。',
-      toMain: 'もし他にも気になることが出てきたら、3つの視点でじっくり読み解く本鑑定（¥3,000）もございます。よろしければご覧ください。\n▶ 本鑑定はこちら：{URL}',
-      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目で読み解く深掘り鑑定（¥5,000）もございます。\n▶ 深掘りはこちら：{URL}',
+      toMain: 'もし他にも気になることが出てきたら、あなたとお相手、二人の羽結びまで視る標準（¥5,500）もございます。よろしければご覧ください。\n▶ こちら：{URL}',
+      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目で読み解く深み鑑定（¥10,000）もございます。\n▶ こちら：{URL}',
       final: 'また心が揺れる夜があれば、この鑑定文をそっと読み返してください🪶'
     },
-    aiPersona: 'あなたは「黒烏」という、言えない恋（不倫・複雑愛）専門のタロット占い師です。読み手のことは「あなた」と呼び、一人称は最小限にし、使うときだけ「黒烏は」としてください。静かで丁寧、断定的だが裁かない口調。絵文字は🪶🌙🖤を控えめに（1通1個目安）。引用の強調は全角「」のみ使ってください。'
+    aiPersona: 'あなたは「黒烏」という、言えない恋（不倫・複雑愛）専門の鑑定士です。タロットカードは使わず、数秘術（生年月日）と姓名判断（画数）を組み合わせた「羽結び」で相談文から読み解いてください。読み手のことは「あなた」と呼び、一人称は最小限にし、使うときだけ「黒烏は」としてください。静かで丁寧、断定的だが裁かない口調。絵文字は🪶🌙🖤を控えめに（1通1個目安）。引用の強調は全角「」のみ使ってください。'
   },
   shiori: {
-    key: 'shiori', name: '栞奈', sub: 'お清めと開運習慣', theme: 'theme-shiori',
-    usesCards: false,
+    key: 'shiori', name: '栞奈', sub: 'お清めと開運｜栞数', theme: 'theme-shiori',
+    usesCards: false, usesMusubi: false, musubiName: '栞数',
+    prices: { free: '無料', lite: '¥1,000', main: '¥4,000', deep: '¥6,500', kiwami: '¥10,000' },
     itemLabels: {
       free: ['運の詰まりポイント'],
       lite: ['運の詰まりポイント'],
       main: ['詰まりの原因', '今の流れ', '今日からの整え方'],
-      deep: ['住まいの運気', '日々の習慣', '人間関係', '仕事・対人運', '全体の流れ']
+      deep: ['住まいの運気', '日々の習慣', '人間関係', '仕事・対人運', '全体の流れ'],
+      kiwami: ['住まいの運気', '日々の習慣', '人間関係', '仕事・対人運', '全体の流れ']
     },
     deepExtraLabel: '30日間の整え方カレンダー（要点）',
     deepExtraText: '最初の10日は住まいと生活リズムを整えることを、次の10日は言葉づかいと人間関係の整理を、最後の10日は感謝を言葉にする習慣を意識してみてください。',
@@ -632,11 +714,11 @@ const ACCOUNTS = {
     ],
     upsell: {
       complete: '今回いただいたご相談内容については、この鑑定で完結です。',
-      toMain: 'もし他にも気になることが出てきたら、3項目でじっくり読み解く本鑑定（¥3,000）もあります。よかったら見てみてね。\n▶ 本鑑定はこちら：{URL}',
-      toDeep: 'もっと具体的に整えたいことが出てきたら、5項目で読み解く深掘り鑑定（¥5,000）もあります。\n▶ 深掘りはこちら：{URL}',
+      toMain: 'もし他にも気になることが出てきたら、3項目でじっくり読み解く標準（¥4,000）もあります。よかったら見てみてね。\n▶ こちら：{URL}',
+      toDeep: 'もっと具体的に整えたいことが出てきたら、5項目で読み解く深み鑑定（¥6,500）もあります。\n▶ こちら：{URL}',
       final: 'また整えたいことが出てきたら、この鑑定文をお守り代わりに読み返してね🕊️'
     },
-    aiPersona: 'あなたは「栞奈」という、お清め・開運習慣専門の鑑定士です。タロットカードは使わず、相談文から運の滞りを読み解いてください。疲れを知る元OLの姉御肌のような、責めずやさしく言い切る口調。絵文字は🕊️🧂を最小限に。祈祷や開運グッズ・高額な物品販売への誘導は一切行わないでください。'
+    aiPersona: 'あなたは「栞奈」という、お清め・開運習慣専門の鑑定士です。タロットカードは使わず、数秘術（生年月日から出す「栞数」）と相談文から運の滞りを読み解いてください。疲れを知る元OLの姉御肌のような、責めずやさしく言い切る口調。絵文字は🕊️🧂を最小限に。祈祷や開運グッズ・高額な物品販売への誘導は一切行わないでください。'
   }
 };
 
@@ -686,6 +768,24 @@ function setAccount(key) {
   document.querySelectorAll('.account-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('acc-' + key).classList.add('selected');
   document.getElementById('body').className = ACCOUNTS[key].theme;
+  const acc = ACCOUNTS[key];
+  Object.keys(acc.prices || {}).forEach(pk => {
+    const el = document.getElementById('price-' + pk);
+    if (el) el.textContent = acc.prices[pk];
+  });
+  // 栞奈は姓名判断を使わないので画数入力欄そのものを隠す
+  const kakusuSelfWrap = document.getElementById('kakusu-self-input');
+  const kakusuPartnerWrap = document.getElementById('kakusu-partner-input');
+  if (kakusuSelfWrap) kakusuSelfWrap.style.display = acc.usesMusubi ? '' : 'none';
+  document.getElementById('numbers-hint').style.display = acc.usesMusubi ? '' : 'none';
+  // テンプレートモードは数秘術・姓名判断版が未対応のため、対象アカでは非表示にしてAI/Claudeへ誘導
+  const tplBtn = document.getElementById('mode-template');
+  if (acc.usesMusubi) {
+    tplBtn.style.display = 'none';
+    if (state.mode === 'template') setMode('ai');
+  } else {
+    tplBtn.style.display = '';
+  }
   updateItemsPreview();
   hideOutput();
 }
@@ -714,8 +814,16 @@ function updateItemsPreview() {
   const nums = ['①', '②', '③', '④', '⑤'];
   let text = labels.map((l, i) => (labels.length > 1 ? nums[i] + ' ' + l : l)).join('　');
   if (state.plan === 'deep') text += '　' + acc.deepExtraLabel;
-  else if (state.plan === 'main') text += acc.usesCards ? '　道すじのまとめ' : '　30日の整え方指針';
+  else if (state.plan === 'kiwami') text += '　' + acc.deepExtraLabel + '＋手相';
+  else if (state.plan === 'main') text += '　' + (acc.usesMusubi ? acc.musubiName + 'のまとめ' : '30日の整え方指針');
   document.getElementById('items-preview').textContent = '鑑定項目: ' + text;
+
+  // お相手の画数は「二人」を扱うプラン（結び以上）でだけ必要
+  const partnerWrap = document.getElementById('kakusu-partner-input');
+  if (partnerWrap) {
+    const needsPartner = acc.usesMusubi && ['main', 'deep', 'kiwami'].includes(state.plan);
+    partnerWrap.style.display = needsPartner ? '' : 'none';
+  }
 }
 
 function updateGenerateBtn() {
@@ -738,6 +846,9 @@ function shioriItemText(theme, index, total) {
 }
 
 function generateTemplateCore(acc, planKey, consult, cards, theme) {
+  if (acc.usesMusubi) {
+    throw new Error('「' + acc.name + '」は数秘術・姓名判断（' + acc.musubiName + '）を使うため、テンプレートモードには対応していません。「AI生成」または「Claudeで作る」をご利用ください。');
+  }
   const quote = extractQuote(consult);
   const labels = acc.itemLabels[planKey];
   const lines = [];
@@ -782,17 +893,53 @@ function generateTemplateCore(acc, planKey, consult, cards, theme) {
   return lines.join('\n');
 }
 
+// 数秘術・姓名判断（結び）の入力値からプロンプトに渡す【使う数字】ブロックを組み立てる
+function buildMusubiNumberInfo(acc, planKey) {
+  const birthdate = ((document.getElementById('birthdate-input') || {}).value || '').trim();
+  const kakusuSelf = ((document.getElementById('kakusu-self-input') || {}).value || '').trim();
+  const kakusuPartner = ((document.getElementById('kakusu-partner-input') || {}).value || '').trim();
+  const lines = [];
+
+  const num = birthdate ? numerologyNumber(birthdate) : null;
+  if (num) {
+    lines.push('・あなたの数秘術ナンバー: ' + num + '（' + (NUMEROLOGY_MEANING[num] || '') + '）');
+  } else {
+    lines.push('・生年月日が未入力のため、数秘術ナンバーは使わず、姓名判断（画数）と相談文の内容だけで読み解いてください。');
+  }
+
+  const needsPartner = ['main', 'deep', 'kiwami'].includes(planKey);
+  if (needsPartner) {
+    if (kakusuSelf) {
+      const lvSelf = kakusuLevel(kakusuSelf);
+      lines.push('・あなたの画数（姓名判断）: ' + kakusuSelf + '画（' + lvSelf + '）');
+    }
+    if (kakusuPartner) {
+      const lvPartner = kakusuLevel(kakusuPartner);
+      lines.push('・お相手の画数（姓名判断）: ' + kakusuPartner + '画（' + lvPartner + '）');
+    }
+    if (kakusuSelf && kakusuPartner) {
+      const pattern = musubiPattern(kakusuLevel(kakusuSelf), kakusuLevel(kakusuPartner));
+      lines.push('・二人の組み合わせ（' + acc.musubiName + '）: ' + pattern);
+    } else {
+      lines.push('・画数が片方または両方未入力です。入力されている数字の範囲で読み解き、無理に画数の話を作らないこと。');
+    }
+  }
+  return lines.join('\n');
+}
+
 // ── AI mode ──
 function buildAIPrompt(acc, planKey, consult, cards, theme) {
   const plan = PLANS[planKey];
   const labels = acc.itemLabels[planKey];
+  const clientName = (document.getElementById('client-name-input') || {}).value ?
+    document.getElementById('client-name-input').value.trim() : '';
   let itemsDesc;
-  if (acc.usesCards) {
-    itemsDesc = labels.map((label, i) => {
-      const c = cards[i]; const card = CARDS[c.id]; const posLabel = c.pos === 'upright' ? '正位置' : '逆位置';
-      return (i + 1) + '. 「' + label + '」→ カード: ' + card.name + '（' + posLabel + '） 基本の意味: ' + cardMeaning(card, c.pos);
-    }).join('\n');
-  } else if (planKey === 'deep') {
+  let numberInfoBlock = '';
+  if (acc.usesMusubi) {
+    numberInfoBlock = buildMusubiNumberInfo(acc, planKey);
+    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」').join('\n') +
+      '\n※各項目は、下の【使う数字】に書かれた数秘術・姓名判断の要素を根拠として、相談内容に沿って読み解くこと。全項目を通して同じ数字を使い回し、一貫した1つの読み解きとして展開すること（項目ごとにバラバラな数字を持ち出さない）。';
+  } else if (planKey === 'deep' || planKey === 'kiwami') {
     itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」→ 参考: ' + SHIORI_AREA_TEXT[label]).join('\n');
   } else if (labels.length === 1) {
     itemsDesc = '1. 「' + labels[0] + '」→ 相談文全体から運の詰まりポイントをひとつ診断し、その原因と今の流れを書いてください。（参考候補: ' + SHIORI_THEMES.map(t => t.name).join('／') + ' などから近いものを選んでも、独自の診断でも構いません）';
@@ -805,7 +952,8 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
     free: '本文（■以降）の目安は300字程度。読み解きは200〜250字、締めまでコンパクトに。',
     lite: '■項目の読み解きは400〜450字でじっくり。締め（今日からできる一手＋安心の一文）は100字前後。冒頭の共感パートは文字数に数えず、■以降の本文で500字以上。',
     main: '各■項目の読み解きは500字前後でじっくり。まとめの項目は150字前後、締め（今日からできる一手＋安心の一文）は150字前後。冒頭の共感パートは文字数に数えず、■以降の本文で1,800字以上。',
-    deep: '各■項目の読み解きは600字前後で深く。30日の指針は300字前後、締めは200字前後。冒頭の共感パートは文字数に数えず、■以降の本文で3,500字以上。'
+    deep: '各■項目の読み解きは600字前後で深く。30日の指針は300字前後、締めは200字前後。冒頭の共感パートは文字数に数えず、■以降の本文で3,500字以上。',
+    kiwami: '各■項目の読み解きは600字前後で深く。30日の指針は300字前後、手相のパートは250字前後、締めは200字前後。冒頭の共感パートは文字数に数えず、■以降の本文で3,500字以上。'
   };
   const targetLine = ALLOC[planKey];
 
@@ -814,11 +962,12 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
     : (acc.key === 'shiori' ? '・祈祷・お祓い・開運グッズ等の物品販売や購入への誘導は一切しない。科学的根拠を偽装する表現（脳科学で証明 等）も使わない'
     : (acc.key === 'kotoha' ? '・相談文が「すでに復縁した／よりを戻した」等、復縁"後"の内容であれば、読み解きを「気持ちと流れ」ではなく「わだかまり・不安の正体」「心の落ち着け方」に読み替えること。見出しの言葉も読み解きの中身に合わせて自然に調整してよい（例:「これからの向き合い方」→「わだかまりとの向き合い方」）。「復縁は上手くいかない」等の否定的な断定はせず、不安そのものを否定しない' : ''));
 
-  const headingBlocks = labels.map(l => '■ ' + l + (acc.usesCards ? '｜カード: (該当カードと正逆位置を明記)' : '') + '\n（読み解き）').join('\n\n');
+  const headingBlocks = labels.map(l => '■ ' + l + '\n（読み解き）').join('\n\n');
   let deepExtra = '';
-  if (planKey === 'deep') deepExtra = '\n\n■ ' + acc.deepExtraLabel + '\n（30日間の指針）';
-  else if (planKey === 'main') deepExtra = acc.usesCards
-    ? '\n\n■ 道すじのまとめ\n（3問の答えを重ねて、全体の流れと「ここからどう進んでいくか」を4〜6行でつなげて書く。新しい断定はしない）'
+  if (planKey === 'kiwami') deepExtra = '\n\n■ ' + acc.deepExtraLabel + '\n（30日間の指針）\n\n■ 手相からわかること\n（提供された手のひら写真の説明を踏まえて2〜3行。写真が無い場合は「手相の写真が届き次第、追記してお渡しします」の一文にする）';
+  else if (planKey === 'deep') deepExtra = '\n\n■ ' + acc.deepExtraLabel + '\n（30日間の指針）';
+  else if (planKey === 'main') deepExtra = acc.usesMusubi
+    ? '\n\n■ ' + acc.musubiName + 'のまとめ\n（【使う数字】で示した数秘術・姓名判断の要素を重ねて、全体の流れと「ここからどう進んでいくか」を4〜6行でつなげて書く。新しい断定はしない）'
     : '\n\n■ 30日の整え方指針\n（お金のかからない、30日間続けられる整え方の指針を3〜4行で）';
 
   const few = FEWSHOTS[acc.key];
@@ -836,13 +985,18 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
 (rules ? rules + '\n' : '') +
 '\n【文章の質のルール】\n' +
 '・冒頭の共感パートで、相談文の中の固有の言葉やエピソード（お相手の呼び方・具体的な出来事・期間など）を最低1つ引用し、相談者自身の言葉に近い形で言い換えて返すこと\n' +
-'・各項目は「結論を先に一文 → 読み解き（理由） → 短い結論の繰り返し」の順で書くこと。カードや理屈の説明から始めない\n' +
-'・カードの意味を辞書のように説明しない（「悲しみを表すカードです」はNG）。相談者の状況の心情描写に翻訳すること（「胸の奥にまだ痛みが残っている、そんな状態が視えます」のように）\n' +
+'・各項目は「結論を先に一文 → 読み解き（理由） → 短い結論の繰り返し」の順で書くこと。数字や理屈の説明から始めない\n' +
+(acc.usesMusubi
+  ? '・数秘術・姓名判断の数字の意味を辞書のように説明しない（「7は内省の数字です」はNG）。相談者の状況の心情描写に翻訳すること（「一人になって、じっくり考えたい気持ちが強まっている、そんな状態が視えます」のように）。複数の数字（あなたの数秘術・あなたの画数・お相手の画数）はバラバラに解説せず、1つのつながった読み解きとして書くこと\n'
+  : '・数字や運気の意味を辞書のように説明しない。相談者の状況の心情描写に翻訳すること（「胸の奥にまだ痛みが残っている、そんな状態が視えます」のように）\n') +
 '・冒頭は相談文に書かれた相談者の選択や気持ちを、まず一文で肯定してから始めること（例:「〜と感じたこと、自然なことだと思います」）。その上で固有の言葉を引用する\n' +
 '・気持ちを読み解く際は、表に出ている感情だけでなく、その奥にある本当の願い、相反する2つの気持ちまで言語化すること（例:「自分から連絡したい。でも、重いと思われるのが怖い」のように、動きたくても動けない葛藤を描く。誰にでも当てはまる共感の言い換えで終わらせない）\n' +
 '・締めの行動提案の前に、「今のつらさの先にある、望んでいる日常」を一文具体的に描くこと（「幸せになる」等の抽象で終わらせず、「どんな会話ができるようになりたいか」「何を我慢しなくてよくなるか」など、情景として見える言葉にする）\n' +
 '・最後は精神論で終わらせず、今日からできる具体的な行動をひとつ示してから、安心の一文で締めること\n' +
-'・AIらしさを出さない: 「さらに」「以上のことから」「なお」等の定型接続語を多用しない／文の長さに長短をつける（体言止めも時々）／箇条書きに逃げない／「〜と思われます」を連発しない／絵文字はごく控えめに\n\n' +
+'・AIらしさを出さない: 「さらに」「以上のことから」「なお」等の定型接続語を多用しない／文の長さに長短をつける（体言止めも時々）／箇条書きに逃げない／「〜と思われます」を連発しない／絵文字はごく控えめに\n' +
+(clientName
+  ? '・お客様のお呼び名は「' + clientName + '」です。呼びかけは冒頭1行目と締めの1行のみに使うこと。それ以外の段落では名前を差し込まない（「' + clientName + 'さんは」等の連発はNG）。呼びかけは多いほど親切ではなく、少ないからこそ効く\n\n'
+  : '・お客様の呼び名が分からない場合、名前で呼びかけず「あなた」等で通すこと\n\n') +
 '【質問の型への答え方】\n' +
 '・時期を聞かれたら: 日付や時期を断定せず、幅で語る（「1〜2ヶ月のうちに動きが出やすい流れです」「季節が変わる頃にひとつ節目が来そうです」など）\n' +
 '・二択（待つべきか諦めるべきか等）を聞かれたら: どちらかを指定しない。それぞれに進んだ場合の流れを示した上で、相談者が自分で決めるための判断軸をひとつ言葉にして返す\n' +
@@ -850,6 +1004,7 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
 fewBlock +
 '【相談文】\n' + consult + '\n\n' +
 '【今回の鑑定内容】\n' + itemsDesc + '\n\n' +
+(numberInfoBlock ? '【使う数字】\n' + numberInfoBlock + '\n\n' : '') +
 '【出力フォーマット】\n' + targetLine + '\n' +
 '以下の構成・見出し表記で出力してください（■を使った見出し、項目の前後に空行）。ひとつの■項目の中でも、3〜4文ごとに空行を入れて段落を分け、読みやすくすること。誘導文・アップセルの案内は絶対に書かないでください（こちらで別途付与します）。\n\n' +
 '（冒頭2〜4行: 相談文の固有の状況や言葉を引用しながらの共感・受け止め）\n\n' +
@@ -933,10 +1088,7 @@ async function generate() {
   const labels = acc.itemLabels[planKey];
 
   let cards = null, theme = null;
-  if (acc.usesCards) {
-    cards = drawCards(labels.length);
-    state.cards = cards;
-  } else if (planKey !== 'deep') {
+  if (!acc.usesMusubi && planKey !== 'deep' && planKey !== 'kiwami') {
     theme = pickShioriTheme(consult);
     state.theme = theme;
   }
@@ -1039,10 +1191,6 @@ function finalizeOutput() {
 
 // ── 鑑定書PDF ──
 const PDF_W = 1240, PDF_H = 1754, PDF_MARGIN = 110;
-// CARDSのidに対応するカード画像ファイル名の日本語表記（フォルダ内のファイル名と一致させる。
-// CARDSの呼称と一部異なる: 5=法王→教皇, 12=吊られた男→吊るされた男）
-const CARD_FILE_BASE = ['愚者', '魔術師', '女教皇', '女帝', '皇帝', '教皇', '恋人たち', '戦車', '力', '隠者',
-  '運命の輪', '正義', '吊るされた男', '死神', '節制', '悪魔', '塔', '星', '月', '太陽', '審判', '世界'];
 
 const PDF_THEME = {
   kuroi: { bg: '#0D1024', ink: '#EDEDF2', accent: '#E8C547', deco: '#96803C' },
@@ -1051,7 +1199,7 @@ const PDF_THEME = {
 
 function pdfEligible() {
   const acc = ACCOUNTS[state.account];
-  return !!acc && acc.usesCards && state.plan === 'deep' && (state.account === 'kotoha' || state.account === 'kuroi');
+  return !!acc && acc.usesMusubi && (state.plan === 'deep' || state.plan === 'kiwami');
 }
 
 function formatJPDate(d) {
@@ -1061,7 +1209,7 @@ function formatJPDate(d) {
 function updatePdfSection() {
   const area = document.getElementById('pdf-area');
   if (!area) return;
-  if (pdfEligible() && state.cards) {
+  if (pdfEligible()) {
     area.classList.add('visible');
     document.getElementById('pdf-msg').classList.add('hidden');
   } else {
@@ -1121,30 +1269,24 @@ function pdfFrame(ctx, theme) {
   ctx.strokeRect(38, 38, PDF_W - 76, PDF_H - 76);
 }
 
-function pdfCardFileName(id, pos) {
-  const num = String(id).padStart(2, '0');
-  const posLabel = pos === 'upright' ? '正' : '逆';
-  return num + '_' + CARD_FILE_BASE[id] + '_' + posLabel + '.jpg';
+// 数字バッジ1個（丸＋中央の数字/画数＋その下のラベル）を描く
+function pdfDrawNumberBadge(ctx, theme, cx, cy, r, bigText, label) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = theme.accent;
+  ctx.stroke();
+  ctx.font = pdfFont(Math.round(r * 0.72), true);
+  ctx.fillStyle = theme.ink;
+  const bw = ctx.measureText(bigText).width;
+  ctx.fillText(bigText, cx - bw / 2, cy - r * 0.42);
+  ctx.font = pdfFont(20, false);
+  ctx.fillStyle = theme.deco;
+  const lw = ctx.measureText(label).width;
+  ctx.fillText(label, cx - lw / 2, cy + r * 0.32);
 }
 
-function pdfLoadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('カード画像の読み込みに失敗しました（' + src + '）'));
-    img.src = src;
-  });
-}
-
-function pdfFitLabel(ctx, text, maxW) {
-  ctx.font = pdfFont(23, true);
-  if (ctx.measureText(text).width <= maxW) return text;
-  let t = text;
-  while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
-  return t + '…';
-}
-
-async function pdfDrawCover(theme, accKey, client, dateStr, cards, cardLabels, consultText, sig) {
+async function pdfDrawCover(theme, accKey, client, dateStr, musubiName, numberBadges, patternText, consultText, sig) {
   const canvas = document.createElement('canvas');
   canvas.width = PDF_W; canvas.height = PDF_H;
   const ctx = canvas.getContext('2d');
@@ -1163,35 +1305,36 @@ async function pdfDrawCover(theme, accKey, client, dateStr, cards, cardLabels, c
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  pdfCenterText(ctx, '― あなたに出たカード ―', 38, true, 252, theme.accent);
+  pdfCenterText(ctx, '― ' + musubiName + 'に使った数字 ―', 38, true, 252, theme.accent);
 
-  const CW = 158, CH = Math.round(PDF_W * CW / 720);
-  const gap = 84, y1 = 330, y2 = y1 + CH + 78;
-  const pos = [];
-  for (let i = 0; i < 3; i++) pos.push([Math.floor((PDF_W - (3 * CW + 2 * gap)) / 2) + i * (CW + gap), y1]);
-  for (let i = 0; i < 2; i++) pos.push([Math.floor((PDF_W - (2 * CW + gap)) / 2) + i * (CW + gap), y2]);
-
-  const images = await Promise.all(cards.map(c => pdfLoadImage('cards/' + accKey + '/' + pdfCardFileName(c.id, c.pos))));
-
-  images.forEach((img, i) => {
-    const x = pos[i][0], y = pos[i][1];
-    ctx.drawImage(img, x, y, CW, CH);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = theme.accent;
-    ctx.strokeRect(x - 2, y - 2, CW + 3, CH + 3);
-    ctx.font = pdfFont(23, true);
-    ctx.fillStyle = theme.ink;
-    const label = cardLabels[i];
-    const lw = ctx.measureText(label).width;
-    ctx.fillText(label, x + (CW - lw) / 2, y + CH + 10);
+  const r = 130, gap = 90, n = numberBadges.length;
+  const rowW = n * (r * 2) + (n - 1) * gap;
+  const cyCircle = 330 + r;
+  numberBadges.forEach((b, i) => {
+    const cx = Math.floor((PDF_W - rowW) / 2) + r + i * (r * 2 + gap);
+    pdfDrawNumberBadge(ctx, theme, cx, cyCircle, r, b.big, b.label);
   });
 
-  const cy = y2 + CH + 84;
+  let ty = cyCircle + r + 70;
+  const maxW = PDF_W - 2 * PDF_MARGIN - 16;
+  if (patternText) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = theme.deco;
+    const patLines = pdfWrapPx(ctx, patternText, 26, false, maxW);
+    pdfRoundRect(ctx, PDF_MARGIN - 26, ty - 20, PDF_W - 2 * PDF_MARGIN + 52, patLines.length * 44 + 40, 14);
+    ctx.stroke();
+    ctx.font = pdfFont(26, false);
+    ctx.fillStyle = theme.ink;
+    let py = ty;
+    patLines.forEach(ln => { ctx.fillText(ln, PDF_MARGIN + 8, py); py += 44; });
+    ty = py + 40;
+  }
+
+  const cy = Math.max(ty + 20, 900);
   pdfCenterText(ctx, '― ご相談内容 ―', 38, true, cy, theme.accent);
 
-  const maxW = PDF_W - 2 * PDF_MARGIN - 16;
   const lines = pdfWrapPx(ctx, consultText, 28, false, maxW);
-  let ty = cy + 84;
+  ty = cy + 84;
   ctx.lineWidth = 2;
   ctx.strokeStyle = theme.deco;
   pdfRoundRect(ctx, PDF_MARGIN - 26, ty - 26, PDF_W - 2 * PDF_MARGIN + 52, lines.length * 50 + 48, 14);
@@ -1211,7 +1354,7 @@ function pdfBodyFromOutput(text) {
   return body.trim();
 }
 
-function pdfBuildTextPages(theme, body, startPage) {
+function pdfBuildTextPages(theme, body, startPage, sectionTitle) {
   const measureCanvas = document.createElement('canvas');
   const mctx = measureCanvas.getContext('2d');
   mctx.textBaseline = 'top';
@@ -1243,7 +1386,7 @@ function pdfBuildTextPages(theme, body, startPage) {
 
     let y = top;
     if (first) {
-      pdfCenterText(ctx, '― カードからわかること ―', 42, true, y, theme.accent);
+      pdfCenterText(ctx, '― ' + sectionTitle + ' ―', 42, true, y, theme.accent);
       y += 104;
       first = false;
     }
@@ -1283,8 +1426,19 @@ async function makeKanteishoPDF() {
   const name = nameInput.value.trim();
   if (!name) { alert('お客様名を入力してください'); return; }
   if (!theme || !pdfEligible()) { alert('鑑定書PDFはこのアカウント・プランでは作成できません'); return; }
-  const cards = state.cards;
-  if (!cards || cards.length < 5) { alert('カード情報が見つかりません。鑑定文を作り直してください。'); return; }
+
+  const birthdate = ((document.getElementById('birthdate-input') || {}).value || '').trim();
+  const kakusuSelf = ((document.getElementById('kakusu-self-input') || {}).value || '').trim();
+  const kakusuPartner = ((document.getElementById('kakusu-partner-input') || {}).value || '').trim();
+  const numberBadges = [];
+  const num = birthdate ? numerologyNumber(birthdate) : null;
+  if (num) numberBadges.push({ big: String(num), label: '数秘術ナンバー' });
+  if (kakusuSelf) numberBadges.push({ big: kakusuSelf + '画', label: 'あなた（' + kakusuLevel(kakusuSelf) + '）' });
+  if (kakusuPartner) numberBadges.push({ big: kakusuPartner + '画', label: 'お相手（' + kakusuLevel(kakusuPartner) + '）' });
+  if (!numberBadges.length) { alert('生年月日か画数を1つ以上入力してから作成してください。'); return; }
+  const patternText = (kakusuSelf && kakusuPartner)
+    ? acc.musubiName + '｜' + musubiPattern(kakusuLevel(kakusuSelf), kakusuLevel(kakusuPartner))
+    : null;
 
   // 鑑定日はボタンを押した日を自動セット
   const now = new Date();
@@ -1297,21 +1451,14 @@ async function makeKanteishoPDF() {
   msg.classList.add('hidden');
 
   try {
-    const nums = ['①', '②', '③', '④', '⑤'];
-    const rawLabels = acc.itemLabels.deep;
-    const measureCanvas = document.createElement('canvas');
-    const mctx = measureCanvas.getContext('2d');
-    const CW = 158;
-    const cardLabels = rawLabels.map((l, i) => pdfFitLabel(mctx, nums[i] + l, CW + 70));
-
     const consultText = document.getElementById('consult-text').value.trim();
     const sig = acc.name + '｜' + acc.sub + '　･　みかづき鑑定室';
 
-    const coverCanvas = await pdfDrawCover(theme, acc.key, name, dateStr, cards, cardLabels, consultText, sig);
+    const coverCanvas = await pdfDrawCover(theme, acc.key, name, dateStr, acc.musubiName, numberBadges, patternText, consultText, sig);
 
     const outputText = document.getElementById('output-text').value;
     const body = pdfBodyFromOutput(outputText);
-    const bodyCanvases = pdfBuildTextPages(theme, body, 2);
+    const bodyCanvases = pdfBuildTextPages(theme, body, 2, acc.musubiName + 'の読み解き');
 
     if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('PDFライブラリの読み込みに失敗しました。通信環境を確認してもう一度お試しください。');
     const { jsPDF } = window.jspdf;
@@ -1399,6 +1546,7 @@ function copyOutput() {
 function resetOutput() {
   hideOutput();
   document.getElementById('consult-text').value = '';
+  document.getElementById('client-name-input').value = '';
   updateGenerateBtn();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
