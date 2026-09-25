@@ -633,7 +633,7 @@ function musubiPattern(levelA, levelB) {
 const ACCOUNTS = {
   kotoha: {
     key: 'kotoha', name: 'ことは', sub: '復縁とタイミング｜言の葉結び', theme: 'theme-kotoha',
-    usesCards: false, usesMusubi: true, musubiName: '言の葉結び',
+    usesCards: false, usesMusubi: true, usesNumerology: true, musubiName: '言の葉結び',
     prices: { free: '無料', lite: '¥1,000', main: '¥4,500', deep: '¥8,500', kiwami: '¥15,000' },
     itemLabels: {
       free: ['お相手の気持ちと今の流れ'],
@@ -662,7 +662,7 @@ const ACCOUNTS = {
   },
   kuroi: {
     key: 'kuroi', name: '黒烏', sub: '言えない恋｜羽結び', theme: 'theme-kuroi',
-    usesCards: false, usesMusubi: true, musubiName: '羽結び',
+    usesCards: false, usesMusubi: true, usesNumerology: true, musubiName: '羽結び',
     prices: { free: '無料', lite: '¥1,500', main: '¥5,500', deep: '¥10,000', kiwami: '¥20,000' },
     secretLine: 'このやりとりが外に出ることはありません。',
     itemLabels: {
@@ -692,7 +692,7 @@ const ACCOUNTS = {
   },
   shiori: {
     key: 'shiori', name: '栞奈', sub: 'お清めと開運｜栞数', theme: 'theme-shiori',
-    usesCards: false, usesMusubi: false, musubiName: '栞数',
+    usesCards: false, usesMusubi: false, usesNumerology: true, musubiName: '栞数',
     prices: { free: '無料', lite: '¥1,000', main: '¥4,000', deep: '¥6,500', kiwami: '¥10,000' },
     itemLabels: {
       free: ['運の詰まりポイント'],
@@ -892,27 +892,29 @@ function buildMusubiNumberInfo(acc, planKey) {
 
   const num = birthdate ? numerologyNumber(birthdate) : null;
   if (num) {
-    lines.push('・あなたの数秘術ナンバー: ' + num + '（' + (NUMEROLOGY_MEANING[num] || '') + '）');
+    lines.push('・あなたの数秘術ナンバー（' + acc.musubiName + '）: ' + num + '（' + (NUMEROLOGY_MEANING[num] || '') + '）');
   } else {
-    lines.push('・生年月日が未入力のため、数秘術ナンバーは使わず、姓名判断（画数）と相談文の内容だけで読み解いてください。');
+    lines.push('・生年月日が未入力のため、数秘術ナンバーは使わず、相談文の内容だけで読み解いてください。');
   }
 
-  if (kakusuSelf) {
-    const lvSelf = kakusuLevel(kakusuSelf);
-    lines.push('・あなたの画数（姓名判断）: ' + kakusuSelf + '画（' + lvSelf + '）※この数字は絶対に足し算や桁の一部取り出しで縮めず、' + kakusuSelf + 'のまま使うこと');
-  }
-
-  const needsPartner = ['main', 'deep', 'kiwami'].includes(planKey);
-  if (needsPartner) {
-    if (kakusuPartner) {
-      const lvPartner = kakusuLevel(kakusuPartner);
-      lines.push('・お相手の画数（姓名判断）: ' + kakusuPartner + '画（' + lvPartner + '）※この数字も絶対に縮めず、' + kakusuPartner + 'のまま使うこと');
+  if (acc.usesMusubi) {
+    if (kakusuSelf) {
+      const lvSelf = kakusuLevel(kakusuSelf);
+      lines.push('・あなたの画数（姓名判断）: ' + kakusuSelf + '画（' + lvSelf + '）※この数字は絶対に足し算や桁の一部取り出しで縮めず、' + kakusuSelf + 'のまま使うこと');
     }
-    if (kakusuSelf && kakusuPartner) {
-      const pattern = musubiPattern(kakusuLevel(kakusuSelf), kakusuLevel(kakusuPartner));
-      lines.push('・二人の組み合わせ（' + acc.musubiName + '）: ' + pattern);
-    } else {
-      lines.push('・画数が片方または両方未入力です。入力されている数字の範囲で読み解き、無理に画数の話を作らないこと。');
+
+    const needsPartner = ['main', 'deep', 'kiwami'].includes(planKey);
+    if (needsPartner) {
+      if (kakusuPartner) {
+        const lvPartner = kakusuLevel(kakusuPartner);
+        lines.push('・お相手の画数（姓名判断）: ' + kakusuPartner + '画（' + lvPartner + '）※この数字も絶対に縮めず、' + kakusuPartner + 'のまま使うこと');
+      }
+      if (kakusuSelf && kakusuPartner) {
+        const pattern = musubiPattern(kakusuLevel(kakusuSelf), kakusuLevel(kakusuPartner));
+        lines.push('・二人の組み合わせ（' + acc.musubiName + '）: ' + pattern);
+      } else {
+        lines.push('・画数が片方または両方未入力です。入力されている数字の範囲で読み解き、無理に画数の話を作らないこと。');
+      }
     }
   }
   return lines.join('\n');
@@ -926,16 +928,17 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
     document.getElementById('client-name-input').value.trim() : '';
   let itemsDesc;
   let numberInfoBlock = '';
+  if (acc.usesNumerology) numberInfoBlock = buildMusubiNumberInfo(acc, planKey);
   if (acc.usesMusubi) {
-    numberInfoBlock = buildMusubiNumberInfo(acc, planKey);
     itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」').join('\n') +
       '\n※各項目は、下の【使う数字】に書かれた数秘術・姓名判断の要素を根拠として、相談内容に沿って読み解くこと。全項目を通して同じ数字を使い回し、一貫した1つの読み解きとして展開すること（項目ごとにバラバラな数字を持ち出さない）。';
   } else if (planKey === 'deep' || planKey === 'kiwami') {
-    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」→ 参考: ' + SHIORI_AREA_TEXT[label]).join('\n');
+    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」→ 参考: ' + SHIORI_AREA_TEXT[label]).join('\n') +
+      '\n※下の【使う数字】に書かれた栞数（数秘術ナンバー）も、各項目の診断の根拠として自然に絡めること。数字の意味を辞書的に説明しない。';
   } else if (labels.length === 1) {
-    itemsDesc = '1. 「' + labels[0] + '」→ 相談文全体から運の詰まりポイントをひとつ診断し、その原因と今の流れを書いてください。（参考候補: ' + SHIORI_THEMES.map(t => t.name).join('／') + ' などから近いものを選んでも、独自の診断でも構いません）';
+    itemsDesc = '1. 「' + labels[0] + '」→ 相談文全体から運の詰まりポイントをひとつ診断し、その原因と今の流れを書いてください。（参考候補: ' + SHIORI_THEMES.map(t => t.name).join('／') + ' などから近いものを選んでも、独自の診断でも構いません）\n※下の【使う数字】に書かれた栞数（数秘術ナンバー）も診断の根拠として自然に絡めること。';
   } else {
-    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」').join('\n') + '\n※相談文全体から運の詰まりポイントをひとつ診断し、①原因→②今の流れ→③今日からの整え方の順で展開してください。';
+    itemsDesc = labels.map((label, i) => (i + 1) + '. 「' + label + '」').join('\n') + '\n※相談文全体から運の詰まりポイントをひとつ診断し、①原因→②今の流れ→③今日からの整え方の順で展開してください。下の【使う数字】に書かれた栞数（数秘術ナンバー）も診断の根拠として自然に絡めること。';
   }
 
   // 文字数は「■以降の鑑定本文」で数える（冒頭の共感パートとアップセルは含めない）
