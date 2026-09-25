@@ -362,9 +362,8 @@ async function tryUnlock() {
   <textarea id="consult-text" placeholder="お客様から届いた相談文をここに貼り付けてください" oninput="updateGenerateBtn()"></textarea>
 
   <div class="mode-toggle">
-    <button class="mode-btn selected" id="mode-template" onclick="setMode('template')">テンプレート</button>
     <button class="mode-btn" id="mode-ai" onclick="setMode('ai')">AI生成 <span class="badge">Gemini</span></button>
-    <button class="mode-btn" id="mode-claude" onclick="setMode('claude')">Claudeで作る</button>
+    <button class="mode-btn selected" id="mode-claude" onclick="setMode('claude')">Claudeで作る</button>
   </div>
   <button class="generate-btn" id="generate-btn" onclick="generate()" disabled>鑑定文を作る</button>
   <p class="no-key-warn" id="no-key-warn">APIキーが未設定です。<a onclick="openSettings()">こちらから設定</a>してください。</p>
@@ -655,8 +654,8 @@ const ACCOUNTS = {
     ],
     upsell: {
       complete: '今回いただいたご相談内容については、この鑑定で完結だよ🤍',
-      toMain: 'もし他にも気になることが出てきたら、あなたとお相手、二人の言の葉結びまで視る結び鑑定（¥4,500）もあるから、よかったら覗いてみてね。\n▶ こちら：{URL}',
-      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目でまるごと読み解く深み鑑定（¥8,500）もあるから、気になったらチェックしてみてね。\n▶ こちら：{URL}',
+      toMain: 'もし他にも気になることが出てきたら、あなたとお相手、二人の言の葉結びまで視る結び鑑定もあるから、よかったら覗いてみてね。\n▶ こちら：{URL}',
+      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目でまるごと読み解く深み鑑定もあるから、気になったらチェックしてみてね。\n▶ こちら：{URL}',
       final: 'また気持ちが揺れたときは、この鑑定文をお守り代わりに読み返してね🤍'
     },
     aiPersona: 'あなたは「ことは」という復縁とタイミング専門の鑑定士です。タロットカードは使わず、数秘術（生年月日）と姓名判断（画数）を組み合わせた「言の葉結び」で相談文から読み解いてください。一人称は「わたし」。読み手には親友にLINEするようなやわらかい口語（敬体とタメ口のミックス）で語りかけてください。絵文字は🤍を1通1個までに抑えてください。'
@@ -685,8 +684,8 @@ const ACCOUNTS = {
     ],
     upsell: {
       complete: '今回いただいたご相談内容については、この鑑定で完結とさせていただきます。',
-      toMain: 'もし他にも気になることが出てきたら、あなたとお相手、二人の羽結びまで視る結び鑑定（¥5,500）もございます。よろしければご覧ください。\n▶ こちら：{URL}',
-      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目で読み解く深み鑑定（¥10,000）もございます。\n▶ こちら：{URL}',
+      toMain: 'もし他にも気になることが出てきたら、あなたとお相手、二人の羽結びまで視る結び鑑定もございます。よろしければご覧ください。\n▶ こちら：{URL}',
+      toDeep: 'もっと具体的に知りたいことが出てきたら、5項目で読み解く深み鑑定もございます。\n▶ こちら：{URL}',
       final: 'また心が揺れる夜があれば、この鑑定文をそっと読み返してください🪶'
     },
     aiPersona: 'あなたは「黒烏」という、言えない恋（不倫・複雑愛）専門の鑑定士です。タロットカードは使わず、数秘術（生年月日）と姓名判断（画数）を組み合わせた「羽結び」で相談文から読み解いてください。読み手のことは「あなた」と呼び、一人称は最小限にし、使うときだけ「黒烏は」としてください。静かで丁寧、断定的だが裁かない口調。絵文字は🪶🌙🖤を控えめに（1通1個目安）。引用の強調は全角「」のみ使ってください。'
@@ -714,8 +713,8 @@ const ACCOUNTS = {
     ],
     upsell: {
       complete: '今回いただいたご相談内容については、この鑑定で完結です。',
-      toMain: 'もし他にも気になることが出てきたら、3項目でじっくり読み解く結び鑑定（¥4,000）もあります。よかったら見てみてね。\n▶ こちら：{URL}',
-      toDeep: 'もっと具体的に整えたいことが出てきたら、5項目で読み解く深み鑑定（¥6,500）もあります。\n▶ こちら：{URL}',
+      toMain: 'もし他にも気になることが出てきたら、3項目でじっくり読み解く結び鑑定もあります。よかったら見てみてね。\n▶ こちら：{URL}',
+      toDeep: 'もっと具体的に整えたいことが出てきたら、5項目で読み解く深み鑑定もあります。\n▶ こちら：{URL}',
       final: 'また整えたいことが出てきたら、この鑑定文をお守り代わりに読み返してね🕊️'
     },
     aiPersona: 'あなたは「栞奈」という、お清め・開運習慣専門の鑑定士です。タロットカードは使わず、数秘術（生年月日から出す「栞数」）と相談文から運の滞りを読み解いてください。疲れを知る元OLの姉御肌のような、責めずやさしく言い切る口調。絵文字は🕊️🧂を最小限に。祈祷や開運グッズ・高額な物品販売への誘導は一切行わないでください。'
@@ -726,7 +725,7 @@ const ACCOUNTS = {
 const state = {
   account: 'kotoha',
   plan: 'free',
-  mode: 'template',
+  mode: 'claude',
   cards: null,
   theme: null,
   coreText: ''
@@ -778,14 +777,6 @@ function setAccount(key) {
   const kakusuPartnerWrap = document.getElementById('kakusu-partner-input');
   if (kakusuSelfWrap) kakusuSelfWrap.style.display = acc.usesMusubi ? '' : 'none';
   document.getElementById('numbers-hint').style.display = acc.usesMusubi ? '' : 'none';
-  // テンプレートモードは数秘術・姓名判断版が未対応のため、対象アカでは非表示にしてAI/Claudeへ誘導
-  const tplBtn = document.getElementById('mode-template');
-  if (acc.usesMusubi) {
-    tplBtn.style.display = 'none';
-    if (state.mode === 'template') setMode('ai');
-  } else {
-    tplBtn.style.display = '';
-  }
   updateItemsPreview();
   hideOutput();
 }
@@ -800,7 +791,6 @@ function setPlan(key) {
 
 function setMode(m) {
   state.mode = m;
-  document.getElementById('mode-template').classList.toggle('selected', m === 'template');
   document.getElementById('mode-ai').classList.toggle('selected', m === 'ai');
   document.getElementById('mode-claude').classList.toggle('selected', m === 'claude');
   document.getElementById('no-key-warn').style.display = (m === 'ai' && !getApiKey()) ? 'block' : 'none';
@@ -1041,7 +1031,7 @@ async function callGemini(prompt) {
       if (!retriable) throw e;
     }
   }
-  throw new Error('Geminiが混み合っています。少し待ってからもう一度お試しください。急ぐ場合は「Claudeで作る」か「テンプレート」をご利用ください。\n（詳細: ' + lastErr.message + '）');
+  throw new Error('Geminiが混み合っています。少し待ってからもう一度お試しください。急ぐ場合は「Claudeで作る」をご利用ください。\n（詳細: ' + lastErr.message + '）');
 }
 
 async function callGeminiOnce(model, prompt) {
