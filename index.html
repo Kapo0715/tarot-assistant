@@ -907,15 +907,16 @@ function buildMusubiNumberInfo(acc, planKey) {
     lines.push('・生年月日が未入力のため、数秘術ナンバーは使わず、姓名判断（画数）と相談文の内容だけで読み解いてください。');
   }
 
+  if (kakusuSelf) {
+    const lvSelf = kakusuLevel(kakusuSelf);
+    lines.push('・あなたの画数（姓名判断）: ' + kakusuSelf + '画（' + lvSelf + '）※この数字は絶対に足し算や桁の一部取り出しで縮めず、' + kakusuSelf + 'のまま使うこと');
+  }
+
   const needsPartner = ['main', 'deep', 'kiwami'].includes(planKey);
   if (needsPartner) {
-    if (kakusuSelf) {
-      const lvSelf = kakusuLevel(kakusuSelf);
-      lines.push('・あなたの画数（姓名判断）: ' + kakusuSelf + '画（' + lvSelf + '）');
-    }
     if (kakusuPartner) {
       const lvPartner = kakusuLevel(kakusuPartner);
-      lines.push('・お相手の画数（姓名判断）: ' + kakusuPartner + '画（' + lvPartner + '）');
+      lines.push('・お相手の画数（姓名判断）: ' + kakusuPartner + '画（' + lvPartner + '）※この数字も絶対に縮めず、' + kakusuPartner + 'のまま使うこと');
     }
     if (kakusuSelf && kakusuPartner) {
       const pattern = musubiPattern(kakusuLevel(kakusuSelf), kakusuLevel(kakusuPartner));
@@ -967,7 +968,7 @@ function buildAIPrompt(acc, planKey, consult, cards, theme) {
   if (planKey === 'kiwami') deepExtra = '\n\n■ ' + acc.deepExtraLabel + '\n（30日間の指針）\n\n■ 手相からわかること\n（提供された手のひら写真の説明を踏まえて2〜3行。写真が無い場合は「手相の写真が届き次第、追記してお渡しします」の一文にする）';
   else if (planKey === 'deep') deepExtra = '\n\n■ ' + acc.deepExtraLabel + '\n（30日間の指針）';
   else if (planKey === 'main') deepExtra = acc.usesMusubi
-    ? '\n\n■ ' + acc.musubiName + 'のまとめ\n（見出しの直後、最初の1文で「' + acc.musubiName + '」が何かを一言だけ補足すること。例:「数秘術と姓名判断を組み合わせた、当店独自の見方だよ」のように、初めて読む人でも分かる言い方で。説明はこの1文だけにとどめ、辞書的に長く語らない。そのあと【使う数字】で示した数秘術・姓名判断の要素を重ねて、全体の流れと「ここからどう進んでいくか」を4〜6行でつなげて書く。新しい断定はしない）'
+    ? '\n\n■ ' + acc.musubiName + 'のまとめ\n（見出しの直後、最初の1文で「' + acc.musubiName + '」が何かを一言だけ補足すること。例:「数秘術と姓名判断を組み合わせた、当店独自の見方だよ」のように、初めて読む人でも分かる言い方で。説明はこの1文だけにとどめ、辞書的に長く語らない。価格・プラン名・「結び鑑定」等の商品名には一切触れないこと。そのあと【使う数字】で示した数秘術・姓名判断の要素を重ねて、全体の流れと「ここからどう進んでいくか」を4〜6行でつなげて書く。新しい断定はしない）'
     : '\n\n■ 30日の整え方指針\n（お金のかからない、30日間続けられる整え方の指針を3〜4行で）';
 
   const few = FEWSHOTS[acc.key];
@@ -1176,10 +1177,15 @@ function buildUpsellBlock(acc, planKey) {
   return '■ 最後に\n' + body;
 }
 
+// 見出し（■◯◯）の直後に空行が入ってしまった場合に1行へ詰める（AIが指示を守らなかった場合の保険）
+function stripHeadingBlankLines(text) {
+  return text.replace(/(^■[^\n]*)\n{2,}/gm, '$1\n');
+}
+
 function finalizeOutput() {
   const acc = ACCOUNTS[state.account];
   const upsell = buildUpsellBlock(acc, state.plan);
-  const full = state.coreText.trim() + '\n\n' + upsell;
+  const full = stripHeadingBlankLines(state.coreText.trim() + '\n\n' + upsell);
   document.getElementById('output-text').value = full;
   document.getElementById('output-mode-tag').textContent = state.mode === 'ai' ? 'AI生成' : (state.mode === 'claude' ? 'Claude' : 'テンプレート');
   const area = document.getElementById('output-area');
